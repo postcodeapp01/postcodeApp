@@ -25,7 +25,6 @@ import { IUserDetails } from './reduxSlices/UserSlice';
 
 function App({ userDetails }: IUserDetails): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
-  console.log(userDetails, 'hello')
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? 'black' : 'white',
