@@ -1,7 +1,7 @@
 import React from "react";
 import HomeStack from './stacks/HomeStack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import UserProfileStack from "./stacks/UserProfileStack";
+import UserProfileStack from "./stacks/AuthStack";
 import NotificationsStack from "./stacks/NotificationsStack";
 import JobsStack from "./stacks/JobsStack";
 

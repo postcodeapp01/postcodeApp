@@ -1,20 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, ImageBackground, TextInput, Dimensions } from "react-native";
 import { LoginStyles } from "../../sources/styles/loginStyles";
 import { Api, domainUrl } from "../../config/Api";
 import Button from "../common/Button";
 import Divider from "../common/Divider";
+import { useNavigation } from "@react-navigation/native";
 
 const { height } = Dimensions.get('window');
 
-const data = {
-    username: "NikhilManne",
-    password: "password123",
-    email: "manne.nikhil.1996@gmail.com",
-    phone_number: "9966554820"
-  }
-
 export default function Login() {
+    const navigation = useNavigation();
+    const [phoneNumber, setPhoneNumber] = useState('');
     
     const renderLogoContainer = () => {
         return (
@@ -26,18 +22,23 @@ export default function Login() {
     }
 
     const handleSignup = () => {
-        console.log('in handle signup', domainUrl + Api.signup)
         fetch(
-            domainUrl + Api.signup, 
+            Api.sendOtp, 
             { 
                 method: 'post',
                 headers: {
                     'Accept': 'application/json, text/plain, */*',
                     'Content-Type': 'application/json'
                 }, 
-                body: JSON.stringify(data)
+                body: JSON.stringify({
+                    phone_number: phoneNumber
+                })
             }, 
-        ).then(res => res.json())
+        ).then(res => {
+            if(res.status === 200) {
+                navigation.navigate('OtpScreen', { phoneNumber: phoneNumber });
+            }
+        })
         .then(res => console.log(res)).catch((err) => {
             console.log(err, 'hello err')
         });
@@ -48,7 +49,7 @@ export default function Login() {
             <View>
                 <View>
                     <Text>Mobile No / Email</Text>
-                    <TextInput  style={LoginStyles.inputBorderContainer} />
+                    <TextInput onChangeText={(text) => setPhoneNumber(text)} style={LoginStyles.inputBorderContainer} />
                 </View>
                 <View>
                     <Button type="primary" text="Continue" onClick={() => handleSignup()} />

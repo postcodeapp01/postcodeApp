@@ -30,7 +30,6 @@ export const LoginStyles = StyleSheet.create({
         borderWidth: 1,
         borderColor: appColors.inputBorderColor,
         borderRadius: 5,
-        color: 'white'
     },
     secondaryTextColor: {
         marginTop: height * 0.05,

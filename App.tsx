@@ -20,7 +20,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import { connect } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
-import AuthStack from './navigators/stacks/UserProfileStack';
+import AuthStack from './navigators/stacks/AuthStack';
 import { IUserDetails } from './reduxSlices/UserSlice';
 
 function App({ userDetails }: IUserDetails): React.JSX.Element {
