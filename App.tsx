@@ -52,8 +52,6 @@ export default function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? 'black' : 'white',
   };
 
-  console.log(userDetails, 'hello userDetails');
-
   return (
     <>
       <StatusBar
