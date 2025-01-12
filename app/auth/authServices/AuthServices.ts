@@ -28,6 +28,10 @@ export function setItemInAsyncStorage(key: string, value: string) {
     AsyncStorage.setItem(key, value);
 }
 
+export async function  getItemFromAsyncStorag(key: string) {
+    return await AsyncStorage.getItem(key);
+}
+
 export async function registerUser(userName: string, phoneNumber: string, email: string, dob: string, location: string) {
     console.log(phoneNumber, userName, email, dob, location)
     try {

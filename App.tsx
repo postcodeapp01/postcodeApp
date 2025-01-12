@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   StatusBar,
@@ -14,21 +14,45 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  Colors
-} from 'react-native/Libraries/NewAppScreen';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux'
 import { NavigationContainer } from '@react-navigation/native';
 import AuthStack from './navigators/stacks/AuthStack';
-import { IUserDetails } from './reduxSlices/UserSlice';
+import { updateUserDetails } from './reduxSlices/UserSlice';
+import { RootState } from './Store';
+import { getItemFromAsyncStorag, getUserDetails } from './app/auth/authServices/AuthServices';
 
-function App({ userDetails }: IUserDetails): React.JSX.Element {
+export default function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
+  const userDetails = useSelector((state: RootState) => state.user);
+  console.log(userDetails, 'hello user details')
+  const dispatch = useDispatch()
+  useEffect(() => {
+    
+
+
+  (async function() {
+    const accessToken = await getItemFromAsyncStorag('accessToken') || '';
+    if(accessToken) {
+      getUserDetails(accessToken).then((response) => {
+        const userData = {
+          isLoggedIn: true,
+          accessToken,
+          userDetails: response.user
+        }
+
+        dispatch(updateUserDetails(userData));
+      }).catch((err) => {
+        console.log('error while fetching user details', err);
+      })
+    }
+  })();
+  }, []);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? 'black' : 'white',
   };
+
+  console.log(userDetails, 'hello userDetails');
 
   return (
     <>
@@ -45,11 +69,3 @@ function App({ userDetails }: IUserDetails): React.JSX.Element {
     </>
   );
 }
-
-function mapStateToProps({user}: any) {
-  return {
-    userDetails: user,
-  }
-}
-
-export default connect(mapStateToProps, null)(App);

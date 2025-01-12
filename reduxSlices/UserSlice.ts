@@ -17,7 +17,9 @@ const userSlice = createSlice({
   },
   reducers: {
     updateUserDetails(state, action) {
-      state.userDetails = action.payload;
+      state.isLoggedIn = action.payload.isLoggedIn;
+      state.accessToken = action.payload.accessToken;
+      state.userDetails = action.payload.userDetails;
     },
   },
 });

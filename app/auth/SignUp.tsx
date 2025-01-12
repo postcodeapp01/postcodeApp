@@ -16,7 +16,6 @@ export default function SignUp({ route }) {
         registerUser(userName, phoneNumber, email, dob, location).then((res) => {
             setItemInAsyncStorage('accessToken', res.access_token);
             getUserDetails(res.access_token).then((response) => {
-                
             })
         })
     }
