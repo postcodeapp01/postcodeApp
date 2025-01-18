@@ -4,7 +4,7 @@ import { appColors } from "../../app/common/utils/utils";
 export const ButtonStyles = StyleSheet.create({
     primary: {
         backgroundColor: appColors.primaryButtonColor,
-        paddingVertical: 10,
+        padding: 15,
         borderRadius: 5,
         marginTop: 25,
     },

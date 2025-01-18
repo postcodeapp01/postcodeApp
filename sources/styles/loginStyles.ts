@@ -33,7 +33,33 @@ export const LoginStyles = StyleSheet.create({
     },
     secondaryTextColor: {
         marginTop: height * 0.05,
+        textAlign: 'center',   
+    },
+    MainHeaderContainer: {
+        backgroundColor: 'white',
+        display: 'flex',
+        flexDirection: 'row',
+        paddingHorizontal: 10,
+        paddingVertical: 15,
+        elevation: 2,
+    },
+    otpContainer: {
+        display: 'flex',
+        flex: 1,
+        backgroundColor: 'white',
+        paddingVertical: width * 0.2,
+        paddingHorizontal: 20,
+    },
+    otpTextStyle: {
         textAlign: 'center',
-        
+        fontSize: 14,
+        marginVertical: 10,
+    },
+    resendOtpContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 10,
     }
 })

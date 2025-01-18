@@ -1,18 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { OtpInput } from "react-native-otp-entry";
 import { validateOtp, registerUser } from "./authServices/AuthServices";
 import { useNavigation } from "@react-navigation/native";
+import { LoginStyles } from "../../sources/styles/loginStyles";
+import Button from "../common/Button";
+
+const seconds = 30;
 
 export default function OTPScreen({ route }) {
     const [otp, setOtp] = useState();
+    const [resendOtpCount, setResendOtpCount] = useState(seconds);
+    const [showOtpCount, setShowOtpCount] = useState(false);
     const navigation = useNavigation();
 
+    const { phoneNumber } = route.params;
+
+    useEffect(() => {
+
+          const interval = setInterval(() => {
+                    setResendOtpCount((count) => {
+                        if(count > 1) {
+                            return count - 1
+                        } else {
+                            clearInterval(interval);
+                            setShowOtpCount(false);
+                            return seconds;
+                        }
+                        
+                    });
+            }, 1000);
+        () => {
+            clearInterval(interval);
+        }
+    }, [showOtpCount])
+
     const handleOtpValidation = (otp) => {
-        const { phoneNumber } = route.params;
         validateOtp(phoneNumber, otp).then((res) => {
-            console.log(res, 'hello otp');
             if(res?.access_token) {
                 // navigate to home
                 AsyncStorage.setItem('accessToken', res.access_token);
@@ -23,13 +48,15 @@ export default function OTPScreen({ route }) {
         })
     }
     return (
-        <View>
+        <View style={LoginStyles.otpContainer}>
+            <Text style={LoginStyles.otpTextStyle}> We have sent a Verification code to </Text>
+            <Text style={{...LoginStyles.otpTextStyle, fontWeight: '600', marginBottom: 30 }}>{phoneNumber}</Text>
             <OtpInput
                 numberOfDigits={6}
                 focusColor="green"
                 autoFocus={false}
                 hideStick={true}
-                placeholder="******"
+                placeholder=""
                 blurOnFilled={true}
                 disabled={false}
                 type="numeric"
@@ -42,7 +69,20 @@ export default function OTPScreen({ route }) {
                 textInputProps={{
                     accessibilityLabel: "One-Time Password",
                 }}
+                theme={{
+                    pinCodeContainerStyle: { width: 50, height: 50 }
+                }}
             />
+            <Text style={[LoginStyles.otpTextStyle, {color: '#476BB9', marginTop: 30 }]}>Check  text message for your OTP</Text>
+            <View style={LoginStyles.resendOtpContainer}>
+                <Text>Didn't get the OTP? </Text>  
+                {showOtpCount ? (
+                    <Text style={{ color:'grey' }} onPress={() => setShowOtpCount(true)}>{`Resend SMS in ${resendOtpCount}`} </Text>
+                ) : (
+                    <Text style={{ color: '#476BB9' }}>Resend OTP</Text>
+                )}
+            </View>
+            <Button type="primary" text="Verify" onClick={() => {}} />
         </View>
     )
 }

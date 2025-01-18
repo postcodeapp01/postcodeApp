@@ -9,10 +9,7 @@ import React, { useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   StatusBar,
-  StyleSheet,
-  Text,
   useColorScheme,
-  View,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux'
 import { NavigationContainer } from '@react-navigation/native';
@@ -24,29 +21,26 @@ import { getItemFromAsyncStorag, getUserDetails } from './app/auth/authServices/
 export default function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const userDetails = useSelector((state: RootState) => state.user);
-  console.log(userDetails, 'hello user details')
-  const dispatch = useDispatch()
-  useEffect(() => {
-    
+  const dispatch = useDispatch();
 
+  // useEffect(() => {
+  //   (async function() {
+  //     const accessToken = await getItemFromAsyncStorag('accessToken') || '';
+  //     if(accessToken) {
+  //       getUserDetails(accessToken).then((response) => {
+  //         const userData = {
+  //           isLoggedIn: true,
+  //           accessToken,
+  //           userDetails: response.user
+  //         }
 
-  (async function() {
-    const accessToken = await getItemFromAsyncStorag('accessToken') || '';
-    if(accessToken) {
-      getUserDetails(accessToken).then((response) => {
-        const userData = {
-          isLoggedIn: true,
-          accessToken,
-          userDetails: response.user
-        }
-
-        dispatch(updateUserDetails(userData));
-      }).catch((err) => {
-        console.log('error while fetching user details', err);
-      })
-    }
-  })();
-  }, []);
+  //         dispatch(updateUserDetails(userData));
+  //       }).catch((err) => {
+  //         console.log('error while fetching user details', err);
+  //       })
+  //     }
+  //   })();
+  // }, []);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? 'black' : 'white',
