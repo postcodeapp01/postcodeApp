@@ -22,28 +22,26 @@ export default function Login() {
     }
 
     const handleSignup = () => {
-
-        navigation.navigate('OtpScreen', { phoneNumber: phoneNumber });
-        // fetch(
-        //     Api.sendOtp, 
-        //     { 
-        //         method: 'post',
-        //         headers: {
-        //             'Accept': 'application/json, text/plain, */*',
-        //             'Content-Type': 'application/json'
-        //         }, 
-        //         body: JSON.stringify({
-        //             phone_number: phoneNumber
-        //         })
-        //     }, 
-        // ).then(res => {
-        //     if(res.status === 200) {
-        //         navigation.navigate('OtpScreen', { phoneNumber: phoneNumber });
-        //     }
-        // })
-        // .then(res => console.log(res)).catch((err) => {
-        //     console.log(err, 'hello err')
-        // });
+        fetch(
+            Api.sendOtp, 
+            { 
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json'
+                }, 
+                body: JSON.stringify({
+                    phone_number: phoneNumber
+                })
+            }, 
+        ).then(res => {
+            if(res.status === 200) {
+                navigation.navigate('OtpScreen', { phoneNumber: phoneNumber });
+            }
+        })
+        .then(res => console.log(res)).catch((err) => {
+            console.log(err, 'hello err')
+        });
     }
 
     const renderInputContainer = () => {
