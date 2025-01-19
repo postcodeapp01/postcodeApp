@@ -35,6 +35,7 @@ export default function Login() {
                 })
             }, 
         ).then(res => {
+            console.log(res, 'hello')
             if(res.status === 200) {
                 navigation.navigate('OtpScreen', { phoneNumber: phoneNumber });
             }

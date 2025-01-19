@@ -6,6 +6,9 @@ import { validateOtp, registerUser } from "./authServices/AuthServices";
 import { useNavigation } from "@react-navigation/native";
 import { LoginStyles } from "../../sources/styles/loginStyles";
 import Button from "../common/Button";
+import { getUserDetails } from "./authServices/AuthServices";
+import { updateUserDetails } from "../../reduxSlices/UserSlice";
+import { useDispatch } from "react-redux";
 
 const seconds = 30;
 
@@ -14,7 +17,7 @@ export default function OTPScreen({ route }) {
     const [resendOtpCount, setResendOtpCount] = useState(seconds);
     const [showOtpCount, setShowOtpCount] = useState(false);
     const navigation = useNavigation();
-
+    const dispatch = useDispatch();
     const { phoneNumber } = route.params;
 
     useEffect(() => {
@@ -36,12 +39,21 @@ export default function OTPScreen({ route }) {
         }
     }, [showOtpCount])
 
-    const handleOtpValidation = (otp) => {
+    const handleOtpValidation = (otp: string) => {
         validateOtp(phoneNumber, otp).then((res) => {
             if(res?.access_token) {
-                // navigate to home
                 AsyncStorage.setItem('accessToken', res.access_token);
-
+                getUserDetails(res?.access_token).then((response) => {
+                    const userData = {
+                      isLoggedIn: true,
+                      accessToken: res?.access_token,
+                      userDetails: response.user
+                    }
+          
+                    dispatch(updateUserDetails(userData));
+                  }).catch((err) => {
+                    console.log('error while fetching user details', err);
+                  })
             } else {
                 navigation.navigate('Signup', { phoneNumber: phoneNumber });
             }

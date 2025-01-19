@@ -72,3 +72,7 @@ export async function getUserDetails(accessToken: string) {
         console.log('error while fetching user details', err);
     }
 }
+
+export const updateUserDetailsInReducer = () => {
+
+}
