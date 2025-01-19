@@ -12,7 +12,7 @@ export default function BottomTabNavigator() {
 
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
-      <Tab.Screen name="Home" component={HomeStack} />
+      <Tab.Screen name="HomeTab" component={HomeStack} />
     </Tab.Navigator>
   );
 }
