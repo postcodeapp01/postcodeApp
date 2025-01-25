@@ -4,8 +4,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import StoreStack from "./stacks/StoresStack";
 import CategoriesStack from "./stacks/CategoriesStack";
 import UserProfileStack from "./stacks/ProfileStack";
+type BottomTabParamList = {
+  HomeTab: undefined;
+  StoresTab: undefined;
+  CategoriesTab: undefined;
+  ProfileTab: undefined;
+};
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<BottomTabParamList>();
 
 export default function BottomTabNavigator() {
     const Tab = createBottomTabNavigator();

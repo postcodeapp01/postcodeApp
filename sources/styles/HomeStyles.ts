@@ -10,10 +10,11 @@ const homeStyles = StyleSheet.create({
     },
     homeHeaderContainer: {
         backgroundColor: 'white',
-        elevation: 5,
         display: 'flex',
         flexDirection: 'row',
         padding: 10,
+        borderBottomColor: '#f5f3ed',
+        borderBottomWidth: 2,
     },
     homeHeaderSearchInputContainer: {
         width: width * 0.6,
