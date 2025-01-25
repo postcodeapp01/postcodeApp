@@ -36,7 +36,7 @@ export const LoginStyles = StyleSheet.create({
         textAlign: 'center',   
     },
     MainHeaderContainer: {
-        backgroundColor: 'white',
+        backgroundColor: appColors.backgroundColor,
         display: 'flex',
         flexDirection: 'row',
         paddingHorizontal: 10,
@@ -46,7 +46,7 @@ export const LoginStyles = StyleSheet.create({
     otpContainer: {
         display: 'flex',
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: appColors.backgroundColor,
         paddingVertical: width * 0.2,
         paddingHorizontal: 20,
     },
@@ -61,5 +61,11 @@ export const LoginStyles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginVertical: 10,
+    },
+    flashscreenContainer: {
+        backgroundColor: appColors.backgroundColor,
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: "center"
     }
 })
