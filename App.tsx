@@ -54,11 +54,11 @@ export default function App(): React.JSX.Element {
       />
        
           <NavigationContainer>
-            {userDetails?.isLoggedIn ? (
+            {/* {userDetails?.isLoggedIn ? ( */}
               <MyDrawer />
-            ) :(
+            {/* ) :(
               <AuthStack />   
-            )}
+            )} */}
           </NavigationContainer>
     </>
   );
