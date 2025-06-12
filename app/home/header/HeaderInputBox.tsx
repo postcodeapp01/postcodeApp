@@ -1,16 +1,19 @@
 import React from "react";
-import { View, TouchableOpacity, Image, Text } from "react-native";
+import { View, TouchableOpacity, Image, Text, StyleSheet } from "react-native";
+import Icon from '@react-native-vector-icons/evil-icons';
+import CartIcon from '@react-native-vector-icons/common';
 import homeStyles from "../../../sources/styles/HomeStyles";
-import Icon from '@react-native-vector-icons/fontawesome6';
+import { CommonStyles } from "../../../sources/styles/common";
 
 export default function HeaderInputBox() {
     return (
-        <View>
+        <View style={[CommonStyles.flexRow, CommonStyles.marginVerticalMd, CommonStyles.spaceBetween]}>
             <TouchableOpacity style={homeStyles.homeHeaderSearchInputContainer}>
-                <Image source={require('../../../sources/images/small_logo.png')} style={homeStyles.homeSearchIcon}resizeMode="center" />
-                <Text>Search for a product</Text>
+                <Text>Global Search</Text>
             </TouchableOpacity> 
-            <Icon name="comments" size={30} />
+            <Icon name="bell" size={30} />
+            <Icon name="heart" size={30} />
+            <Icon name="cart" size={30} />
         </View>
     )
 }

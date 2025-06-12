@@ -1,6 +1,6 @@
 import { StyleSheet, Dimensions } from "react-native";
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const homeStyles = StyleSheet.create({
     homeContainer: {
@@ -9,21 +9,17 @@ const homeStyles = StyleSheet.create({
         backgroundColor: 'white'
     },
     homeHeaderContainer: {
-        backgroundColor: 'white',
-        display: 'flex',
-        flexDirection: 'row',
         padding: 10,
         borderBottomColor: '#f5f3ed',
         borderBottomWidth: 2,
     },
     homeHeaderSearchInputContainer: {
         width: width * 0.6,
-        backgroundColor: '#f5f3ed',
-        height: 45,
-        borderRadius: 5,
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center'   ,
+        backgroundColor: '#D9D9D9',
+        height: 35,
+        display: "flex",
+        flexDirection: "row",
+        alignItems: 'center',
         padding: 5 
     },
     homeSearchIcon: {
@@ -31,6 +27,30 @@ const homeStyles = StyleSheet.create({
         height: 35,
         marginRight: 10,
         opacity: 0.5
+    },
+    addressLabelText: {
+        fontWeight: 500,
+        fontSize: 14,
+        marginHorizontal: 10
+    },
+    addressLabelContainer: {
+        width: width * 0.85,
+        display: 'flex',
+        flexDirection: 'row',
+        overflow: 'hidden',
+    },
+    categoryBlock: {
+        flexGrow: 1,
+        height: 48,
+        backgroundColor: '#D9D9D9',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    categoryBlockContainer: {
+        display: 'flex',
+        width: width * 0.2,
+        maxWidth: 200
     }
 })
 

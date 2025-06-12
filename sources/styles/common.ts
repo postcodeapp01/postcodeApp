@@ -1,5 +1,7 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 import { appColors } from "../../app/common/utils/utils";
+
+const { width, height } = Dimensions.get('window');
 
 export const ButtonStyles = StyleSheet.create({
     primary: {
@@ -47,5 +49,50 @@ export const DividerStyles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: -10,
         backgroundColor: 'white'  
+    }
+})
+
+export const CommonStyles = StyleSheet.create({
+    flexRow: {
+        display: 'flex',
+        flexDirection: 'row'
+    },
+    fontWeight500: {
+        fontWeight: 500
+    },
+    spaceBetween: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    marginVerticalSm: {
+        marginVertical: 10
+    },
+    marginHorizonalSm: {
+        marginHorizontal: 10
+    },
+    marginVerticalMd: {
+        marginVertical: 20
+    },
+    fontWeight: {
+        fontWeight: 500
+    },
+    popupContainer: {
+        display: 'flex',
+        width,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        height,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        zIndex: 1000,
+    },
+    popupContentContainer: {
+        backgroundColor: 'white',
+        height: height * 0.6,
+        width,
+        opacity: 1,
+        elevation: 10,
+        borderRadius: 10,
     }
 })

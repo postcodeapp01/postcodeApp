@@ -2,7 +2,8 @@ export const appColors = {
     textColor: '#4B5368',
     inputBorderColor: '#989CA8',
     primaryButtonColor: '#42A1F4',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    borderColor: '#D5D5D5'
 }
 
 export const icons = {
