@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TouchableOpacity, View , TouchableWithoutFeedback} from "react-native";
+import { TouchableOpacity, View , TouchableWithoutFeedback, Pressable} from "react-native";
 import { CommonStyles } from "../../../sources/styles/common";
 
 type withPopupArgumentsProps = {
@@ -21,13 +21,13 @@ const withPopup = <P extends {}>(Component: React.ComponentType<P>, { popUpPosit
         }
     }
     return (props: P) => (
-        <TouchableOpacity style={[CommonStyles.popupContainer, { justifyContent: getPosition()}, {...style}]} onPress={() => togglePopup(false)}>
+        <Pressable style={[CommonStyles.popupContainer, { justifyContent: getPosition()}, {...style}]} onPress={() => togglePopup(false)}>
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
             <View style={[CommonStyles.popupContentContainer]}>
                 <Component {...props} />
             </View>
             </TouchableWithoutFeedback>
-        </TouchableOpacity>
+        </Pressable>
     )
 }
 

@@ -12,13 +12,17 @@ import { useDispatch } from "react-redux";
 
 const seconds = 30;
 
-export default function OTPScreen({ route }) {
-    const [otp, setOtp] = useState();
+type IOtpScreenProps = {
+    route: any;
+}
+
+export default function OTPScreen({ route }: IOtpScreenProps) {
+    const [otp, setOtp] = useState<string>();
     const [resendOtpCount, setResendOtpCount] = useState(seconds);
     const [showOtpCount, setShowOtpCount] = useState(false);
     const navigation = useNavigation();
     const dispatch = useDispatch();
-    const { phoneNumber } = route.params;
+    const { phoneNumber, phone, email } = route.params;
 
     useEffect(() => {
 
@@ -40,7 +44,8 @@ export default function OTPScreen({ route }) {
     }, [showOtpCount])
 
     const handleOtpValidation = (otp: string) => {
-        validateOtp(phoneNumber, otp).then((res) => {
+        validateOtp(phone, otp, email).then((res) => {
+            console.log(res, 'hello res');
             if(res?.access_token) {
                 AsyncStorage.setItem('accessToken', res.access_token);
                 getUserDetails(res?.access_token).then((response) => {

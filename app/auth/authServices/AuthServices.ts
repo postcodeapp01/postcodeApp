@@ -2,8 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Api } from "../../../config/Api";
 
 
-export async function validateOtp(phoneNumber: string, otp: string) {
-    console.log(phoneNumber, otp, Api.validateOtp,)
+export async function validateOtp(phone: string, otp: string, email: string) {
     try {
         const response = await fetch(Api.validateOtp, {
             method: 'post',
@@ -12,7 +11,8 @@ export async function validateOtp(phoneNumber: string, otp: string) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                phone_number:   phoneNumber,
+                phone,
+                email, 
                 otp,
             })
         })

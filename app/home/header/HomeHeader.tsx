@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, Text, Image, TouchableOpacity } from "react-native";
+import { View } from "react-native";
 import homeStyles from "../../../sources/styles/HomeStyles";
 import HeaderInputBox from "./HeaderInputBox";
 import HomeHeaderAddressBox from "../../address/HomeHeaderAddressBox";
@@ -27,12 +27,12 @@ const addressList = [
         state: 'Telangana',
         city: 'Hyderabad',
         pincode: 500053
-    },
+    }
 ]
 
 
 export default function HomeHeader() {
-    const [showPopup, setShowPopup] = useState<boolean>(true);
+    const [showPopup, setShowPopup] = useState<boolean>(false);
     const [selectedAddress, setSelectedAddress]=useState<addressProps>(addressList[0])
 
     const renderAddressPopup = (): React.ReactElement => {
@@ -44,13 +44,13 @@ export default function HomeHeader() {
 
 
     return (
-        <>
+        <View>
             {showPopup ? renderAddressPopup() : null}
             <View style={homeStyles.homeHeaderContainer}>
                 <HomeHeaderAddressBox address={selectedAddress} showAddressList={() => setShowPopup(true)} />
                 <HeaderInputBox />
                 <HeaderCategories />
             </View>
-        </>
+        </View>
     )
 }

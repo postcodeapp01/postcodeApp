@@ -91,6 +91,7 @@ export const CommonStyles = StyleSheet.create({
         backgroundColor: 'white',
         height: height * 0.6,
         width,
+        position: 'relative',
         opacity: 1,
         elevation: 10,
         borderRadius: 10,
