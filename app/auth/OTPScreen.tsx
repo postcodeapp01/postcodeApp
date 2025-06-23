@@ -9,6 +9,7 @@ import Button from "../common/Button";
 import { getUserDetails } from "./authServices/AuthServices";
 import { updateUserDetails } from "../../reduxSlices/UserSlice";
 import { useDispatch } from "react-redux";
+import Loader from "../common/utils/Loader";
 
 const seconds = 30;
 
@@ -20,6 +21,8 @@ export default function OTPScreen({ route }: IOtpScreenProps) {
     const [otp, setOtp] = useState<string>();
     const [resendOtpCount, setResendOtpCount] = useState(seconds);
     const [showOtpCount, setShowOtpCount] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const { phoneNumber, phone, email } = route.params;
@@ -44,9 +47,15 @@ export default function OTPScreen({ route }: IOtpScreenProps) {
     }, [showOtpCount])
 
     const handleOtpValidation = (otp: string) => {
+        setIsLoading(true);
         validateOtp(phone, otp, email).then((res) => {
-            console.log(res, 'hello res');
-            if(res?.access_token) {
+            if(res.error) {
+                setErrorMessage(res.error)
+            } if(res.message) {
+                setErrorMessage(res.message)
+            } else if(res?.statusCode === 206) {
+                navigation.navigate('Signup', { phone, email });
+            } else if(res?.access_token) {
                 AsyncStorage.setItem('accessToken', res.access_token);
                 getUserDetails(res?.access_token).then((response) => {
                     const userData = {
@@ -60,11 +69,14 @@ export default function OTPScreen({ route }: IOtpScreenProps) {
                     console.log('error while fetching user details', err);
                   })
             } else {
-                navigation.navigate('Signup', { phoneNumber: phoneNumber });
             }
-        })
+        }).catch((err) => {
+            console.log("Error while validating OTP", err);
+        }).finally(() => setIsLoading(false))
     }
     return (
+        <>
+        {isLoading ? <Loader /> : null}
         <View style={LoginStyles.otpContainer}>
             <Text style={LoginStyles.otpTextStyle}> We have sent a Verification code to </Text>
             <Text style={{...LoginStyles.otpTextStyle, fontWeight: '600', marginBottom: 30 }}>{phoneNumber}</Text>
@@ -81,7 +93,7 @@ export default function OTPScreen({ route }: IOtpScreenProps) {
                 focusStickBlinkingDuration={500}
                 onFocus={() => console.log("Focused")}
                 onBlur={() => console.log("Blurred")}
-                onTextChange={(text) => setOtp(text)}
+                onTextChange={(text) => {setOtp(text); if(errorMessage) setErrorMessage('')}}
                 onFilled={(text) => handleOtpValidation(text)}
                 textInputProps={{
                     accessibilityLabel: "One-Time Password",
@@ -90,6 +102,7 @@ export default function OTPScreen({ route }: IOtpScreenProps) {
                     pinCodeContainerStyle: { width: 50, height: 50 }
                 }}
             />
+            {errorMessage ? <Text style={{ color: 'red', textAlign: 'center', margin: 10 }}>{errorMessage}</Text> : null}
             <Text style={[LoginStyles.otpTextStyle, {color: '#476BB9', marginTop: 30 }]}>Check  text message for your OTP</Text>
             <View style={LoginStyles.resendOtpContainer}>
                 <Text>Didn't get the OTP? </Text>  
@@ -99,7 +112,8 @@ export default function OTPScreen({ route }: IOtpScreenProps) {
                     <Text style={{ color: '#476BB9' }}>Resend OTP</Text>
                 )}
             </View>
-            <Button type="primary" text="Verify" onClick={() => {}} />
+            <Button type="primary" text="Verify" onClick={() => handleOtpValidation(otp)} />
         </View>
+        </>
     )
 }

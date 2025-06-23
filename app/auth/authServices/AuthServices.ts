@@ -13,7 +13,7 @@ export async function validateOtp(phone: string, otp: string, email: string) {
             body: JSON.stringify({
                 phone,
                 email, 
-                otp,
+                code: otp,
             })
         })
         const res = await response.json();
@@ -32,8 +32,8 @@ export async function  getItemFromAsyncStorag(key: string) {
     return await AsyncStorage.getItem(key);
 }
 
-export async function registerUser(userName: string, phoneNumber: string, email: string, dob: string, location: string) {
-    console.log(phoneNumber, userName, email, dob, location)
+export async function registerUser(userName: string, phoneNumber: string, email: string, dob: string) {
+    console.log(phoneNumber, userName, email, dob)
     try {
         const response = await fetch(Api.register, {
             method: 'post',
@@ -45,8 +45,7 @@ export async function registerUser(userName: string, phoneNumber: string, email:
                     username: userName,
                     phone_number: phoneNumber,
                     email,
-                    dob,
-                    location
+                    dob
             })
         })
         const res = await response.json();

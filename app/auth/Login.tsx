@@ -6,6 +6,8 @@ import Button from "../common/Button";
 import Divider from "../common/Divider";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import Loader from "../common/utils/Loader";
+import { CommonStyles } from "../../sources/styles/common";
 
 const { height } = Dimensions.get('window');
 
@@ -24,6 +26,8 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'OtpScreen'>;
 export default function Login() {
     const navigation = useNavigation<NavigationProp>();
     const [userId, setUserId] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('')
     
     const renderLogoContainer = () => {
         return (
@@ -40,6 +44,7 @@ export default function Login() {
             phone: userId.includes('@') ? null : userId,
             email: userId.includes('@') ? userId : null
         }
+        setIsLoading(true);
         fetch(
             Api.sendOtp, 
             { 
@@ -50,14 +55,18 @@ export default function Login() {
                 }, 
                 body: JSON.stringify(requestObject)
             }, 
-        ).then(res => {
-            console.log(res, 'hello res');
-            if(res.status === 200) {
+        ).then(async res => {
+            const response = await res.json();
+            if(response.statusCode === 429 || response.statusCode === 400) {
+                setErrorMessage(response.message)
+            } else if(res.status === 200) {
                 navigation.navigate('OtpScreen', requestObject);
             }
         }).catch((err) => {
-            console.log("Error while sending otp", err);
-        })
+            console.log('Error while initiating the login', err);
+            setErrorMessage("Something Went wrong. Please try again later")
+            
+        }).finally(() => setIsLoading(false))
     }
 
     const renderInputContainer = () => {
@@ -67,6 +76,7 @@ export default function Login() {
                     <Text>Mobile No / Email</Text>
                     <TextInput onChangeText={(text) => setUserId(text)} style={LoginStyles.inputBorderContainer} />
                 </View>
+                {errorMessage ? <Text style={CommonStyles.errorMessageStyle}>{errorMessage}</Text> : null}
                 <View>
                     <Button type="primary" text="Continue" onClick={() => handleSignup()} />
                 </View>
@@ -84,6 +94,8 @@ export default function Login() {
         )
     }
     return (
+        <>
+        {isLoading ? <Loader /> : null}
         <View style={{ backgroundColor: 'white', height }}>
              <View style={LoginStyles.LoginContainer}>
                 {renderLogoContainer()}
@@ -95,5 +107,6 @@ export default function Login() {
                 </View>
             </View>
         </View>
+        </>
     )
 }

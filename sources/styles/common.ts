@@ -95,5 +95,15 @@ export const CommonStyles = StyleSheet.create({
         opacity: 1,
         elevation: 10,
         borderRadius: 10,
+    },
+    center: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+    }, 
+    errorMessageStyle: {
+        textAlign: 'center',
+        color: 'red',
+        margin: 10
     }
 })
