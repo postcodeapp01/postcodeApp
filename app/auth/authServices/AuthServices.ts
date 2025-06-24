@@ -42,10 +42,9 @@ export async function registerUser(userName: string, phoneNumber: string, email:
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                    username: userName,
-                    phone_number: phoneNumber,
-                    email,
-                    dob
+                    name: userName,
+                    phone: phoneNumber,
+                    email
             })
         })
         const res = await response.json();

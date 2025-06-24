@@ -49,15 +49,12 @@ export default function OTPScreen({ route }: IOtpScreenProps) {
     const handleOtpValidation = (otp: string) => {
         setIsLoading(true);
         validateOtp(phone, otp, email).then((res) => {
-            if(res.error) {
-                setErrorMessage(res.error)
-            } if(res.message) {
-                setErrorMessage(res.message)
-            } else if(res?.statusCode === 206) {
+            if(res?.statusCode === 206) {
                 navigation.navigate('Signup', { phone, email });
-            } else if(res?.access_token) {
-                AsyncStorage.setItem('accessToken', res.access_token);
-                getUserDetails(res?.access_token).then((response) => {
+            } else if(res?.statusCode === 200) {
+                AsyncStorage.setItem('accessToken', res?.data?.accessToken);
+
+                getUserDetails(res?.accessToken).then((response) => {
                     const userData = {
                       isLoggedIn: true,
                       accessToken: res?.access_token,
@@ -68,8 +65,11 @@ export default function OTPScreen({ route }: IOtpScreenProps) {
                   }).catch((err) => {
                     console.log('error while fetching user details', err);
                   })
-            } else {
-            }
+            } else if(res.error) {
+                setErrorMessage(res.error)
+            } else if(res.message) {
+                setErrorMessage(res.message)
+            } 
         }).catch((err) => {
             console.log("Error while validating OTP", err);
         }).finally(() => setIsLoading(false))

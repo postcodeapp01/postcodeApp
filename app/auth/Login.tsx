@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { View, Text, ImageBackground, TextInput, Dimensions } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { LoginStyles } from "../../sources/styles/loginStyles";
 import { Api, domainUrl } from "../../config/Api";
 import Button from "../common/Button";
 import Divider from "../common/Divider";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import Loader from "../common/utils/Loader";
 import { CommonStyles } from "../../sources/styles/common";
 
@@ -20,7 +20,7 @@ export type RootStackParamList = {
   };
   
 
-type NavigationProp = StackNavigationProp<RootStackParamList, 'OtpScreen'>;
+export type NavigationProp = StackNavigationProp<RootStackParamList, 'OtpScreen'>;
 
 
 export default function Login() {

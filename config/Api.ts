@@ -4,5 +4,5 @@ export const Api = {
     sendOtp: `${domainUrl}/user/auth/initiate`,
     validateOtp: `${domainUrl}/user/auth/verify`,
     register: `${domainUrl}/register`,
-    getUserDetails: `${domainUrl}/user-details`
+    getUserDetails: `${domainUrl}/user/profile`
 }
