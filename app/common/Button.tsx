@@ -13,7 +13,7 @@ interface IButtonInterface {
 
 export default function Button({ type, text, onClick = () => {}, iconName, iconType = 'png', disabled}: IButtonInterface) {
     return (
-            <TouchableOpacity onPress={() => {if(!disabled) onClick()}} style={ButtonStyles[type]}>
+            <TouchableOpacity onPress={() => {if(!disabled) onClick()}} style={[ButtonStyles[type], { opacity: disabled ? 0.5 : 1 }]}>
                {iconName ? <ImageBackground style={{ aspectRatio: 1, width: 24 }} source={icons[iconName]} /> : null}
                 <Text style={ButtonStyles[`${type}Text`]}>{text}</Text>
             </TouchableOpacity>

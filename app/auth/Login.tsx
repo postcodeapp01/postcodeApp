@@ -39,6 +39,7 @@ export default function Login() {
     }
 
     const handleSignup = () => {
+        setErrorMessage("");
         const requestObject = {
             name: null,
             phone: userId.includes('@') ? null : userId,
@@ -57,6 +58,7 @@ export default function Login() {
             }, 
         ).then(async res => {
             const response = await res.json();
+            console.log(response)
             if(response.statusCode === 429 || response.statusCode === 400) {
                 setErrorMessage(response.message)
             } else if(res.status === 200) {
@@ -78,7 +80,7 @@ export default function Login() {
                 </View>
                 {errorMessage ? <Text style={CommonStyles.errorMessageStyle}>{errorMessage}</Text> : null}
                 <View>
-                    <Button type="primary" text="Continue" onClick={() => handleSignup()} />
+                    <Button type="primary" text="Continue" disabled={!userId?.length} onClick={() => handleSignup()} />
                 </View>
             </View>
         )

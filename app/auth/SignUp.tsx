@@ -3,7 +3,6 @@ import { View, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Input from "../common/Input";
 import Button from "../common/Button";
-import { registerUser, setItemInAsyncStorage, getUserDetails } from "./authServices/AuthServices";
 import Loader from "../common/utils/Loader";
 import { Api } from "../../config/Api";
 import { NavigationProp } from "./Login";
@@ -57,7 +56,7 @@ export default function SignUp({ route }: { route: any }) {
                     <Input label="Phone" onChangeInput={(text) => setPhone(text)} />
                 )}
                 {/* <Input label="Date of birth" onChangeInput={(text) => setDob(text)} /> */}
-                <Button type="primary" text="Sign Up" disabled={!email.length || !phone.length} onClick={() => handleRegistration()} />
+                <Button type="primary" text="Sign Up" disabled={!email?.length || !phone?.length} onClick={() => handleRegistration()} />
             </View>
         </>
     )
