@@ -1,19 +1,29 @@
-import React from "react";
-import { View, TouchableOpacity, Image, Text, StyleSheet } from "react-native";
-import Icon from '@react-native-vector-icons/evil-icons';
-import CartIcon from '@react-native-vector-icons/common';
-import homeStyles from "../../../sources/styles/HomeStyles";
-import { CommonStyles } from "../../../sources/styles/common";
+import React from 'react';
+import { TextInput, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { HomeStackParamList } from '../../../navigators/stacks/HomeStack';
+import homeStyles from '../../../sources/styles/HomeStyles';
 
-export default function HeaderInputBox() {
-    return (
-        <View style={[CommonStyles.flexRow, CommonStyles.marginVerticalMd, CommonStyles.spaceBetween]}>
-            <TouchableOpacity style={homeStyles.homeHeaderSearchInputContainer}>
-                <Text>Global Search</Text>
-            </TouchableOpacity> 
-            <Icon name="bell" size={30} />
-            <Icon name="heart" size={30} />
-            <Icon name="cart" size={30} />
-        </View>
-    )
-}
+const HeaderInputBox = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+
+  return (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('SearchScreen')}
+      style={homeStyles.searchInputContainer}
+      activeOpacity={0.8}
+    >
+      <Icon name="search" size={20} style={homeStyles.searchIcon} />
+      <TextInput
+        placeholder="Search for fashion"
+        style={homeStyles.searchInput}
+        editable={false}
+        pointerEvents="none"
+      />
+    </TouchableOpacity>
+  );
+};
+
+export default HeaderInputBox;
