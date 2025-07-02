@@ -10,13 +10,6 @@ import {
   TouchableOpacity,
   Keyboard,
 } from 'react-native';
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from 'firebase/firestore';
-import { db } from '../../config/firebase';
 
 type Product = {
   id: string;
@@ -31,32 +24,6 @@ const SearchScreen = ({ navigation }: any) => {
   const [results, setResults] = useState<Product[]>([]);
 
   const handleSearch = async () => {
-    const queryText = searchQuery.trim().toLowerCase();
-    if (queryText.length <= 1) {
-      setResults([]);
-      return;
-    }
-
-    try {
-      const q = query(
-        collection(db, 'products'),
-        where('keywords', 'array-contains', queryText)
-      );
-
-      const querySnapshot = await getDocs(q);
-      const items: Product[] = querySnapshot.docs.map((doc) => {
-        const data = doc.data() as Omit<Product, 'id'>;
-        return {
-          id: doc.id,
-          ...data,
-        };
-      });
-
-      setResults(items);
-      Keyboard.dismiss(); // hide keyboard after search
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    }
   };
 
   return (
