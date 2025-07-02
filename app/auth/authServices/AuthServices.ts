@@ -2,8 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Api } from "../../../config/Api";
 
 
-export async function validateOtp(phoneNumber: string, otp: string) {
-    console.log(phoneNumber, otp, Api.validateOtp,)
+export async function validateOtp(phone: string, otp: string, email: string) {
     try {
         const response = await fetch(Api.validateOtp, {
             method: 'post',
@@ -12,8 +11,9 @@ export async function validateOtp(phoneNumber: string, otp: string) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                phone_number:   phoneNumber,
-                otp,
+                phone,
+                email, 
+                code: otp,
             })
         })
         const res = await response.json();
@@ -32,8 +32,8 @@ export async function  getItemFromAsyncStorag(key: string) {
     return await AsyncStorage.getItem(key);
 }
 
-export async function registerUser(userName: string, phoneNumber: string, email: string, dob: string, location: string) {
-    console.log(phoneNumber, userName, email, dob, location)
+export async function registerUser(userName: string, phoneNumber: string, email: string, dob: string) {
+    console.log(phoneNumber, userName, email, dob)
     try {
         const response = await fetch(Api.register, {
             method: 'post',
@@ -42,11 +42,9 @@ export async function registerUser(userName: string, phoneNumber: string, email:
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                    username: userName,
-                    phone_number: phoneNumber,
-                    email,
-                    dob,
-                    location
+                    name: userName,
+                    phone: phoneNumber,
+                    email
             })
         })
         const res = await response.json();

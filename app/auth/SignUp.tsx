@@ -1,31 +1,63 @@
 import React, { useState } from "react";
 import { View, Text } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import Input from "../common/Input";
 import Button from "../common/Button";
-import { registerUser, setItemInAsyncStorage, getUserDetails } from "./authServices/AuthServices";
-import { useDispatch } from "react-redux";
+import Loader from "../common/utils/Loader";
+import { Api } from "../../config/Api";
+import { NavigationProp } from "./Login";
 
-export default function SignUp({ route }) {
+export default function SignUp({ route }: { route: any }) {
+    const navigation = useNavigation<NavigationProp>();
+    const { phone: phoneProp, email: emailProp } = route.params;
     const [userName, setUserName] = useState("");
-    const [email, setEmail] = useState("");
-    const [dob, setDob] = useState("");
-    const [location, setLocation] = useState("");
-
+    const [email, setEmail] = useState(emailProp);
+    const [phone, setPhone] = useState(phoneProp)
+    // const [dob, setDob] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const handleRegistration = () => {
-        const { phoneNumber } = route.params;
-        registerUser(userName, phoneNumber, email, dob, location).then((res) => {
-            setItemInAsyncStorage('accessToken', res.access_token);
-            getUserDetails(res.access_token).then((response) => {
-            })
-        })
+        setIsLoading(true);
+        const requestObject = {
+            phone,
+            email,
+            name: userName
+        }
+        fetch(
+            Api.sendOtp, 
+            { 
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }, 
+                body: JSON.stringify(requestObject)
+            }, 
+        ).then(async res => {
+            if(res.status === 200) {
+                navigation.navigate('OtpScreen', requestObject);
+            }
+        }).catch((err) => {
+            console.log('Error while initiating the login', err);
+            setErrorMessage("Something Went wrong. Please try again later")
+            
+        }).finally(() => setIsLoading(false))
     }
+
+
     return (
-        <View>
-            <Input label="User Name" onChangeInput={(text) => setUserName(text)} />
-            <Input label="Email" onChangeInput={(text) => setEmail(text)} />
-            <Input label="Date of birth" onChangeInput={(text) => setDob(text)} />
-            <Input label="Location" onChangeInput={(text) => setLocation(text)} />
-            <Button type="primary" text="Sign Up" onClick={() => handleRegistration()} />
-        </View>
+        <>
+            {isLoading ? <Loader /> : null}
+            <View style={{ backgroundColor: "white", padding: 10, flex: 1, marginVertical: 10 }}>
+                <Input label="User Name" onChangeInput={(text) => setUserName(text)} />
+                {phoneProp ? (
+                    <Input label="Email" onChangeInput={(text) => setEmail(text)} />
+                ) : (
+                    <Input label="Phone" onChangeInput={(text) => setPhone(text)} />
+                )}
+                {/* <Input label="Date of birth" onChangeInput={(text) => setDob(text)} /> */}
+                <Button type="primary" text="Sign Up" disabled={!email?.length || !phone?.length} onClick={() => handleRegistration()} />
+            </View>
+        </>
     )
 }

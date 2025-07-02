@@ -5,21 +5,12 @@ import homeStyles from '../../sources/styles/HomeStyles';
 import { CommonStyles } from '../../sources/styles/common';
 import { concatAddress } from '../common/utils/common';
 
-const initialAddress = {
-    label: 'Home',
-    houseNumber: '18-6-661',
-    addressLine1: 'Laldarwaza South',
-    addressLine2: 'Aliyabad',
-    city: 'Hyderabad',
-    pincode: '500053'
-}
-
 type IHomeHeaderAddressBoxProps = {
     address: any,
     showAddressList: (asdf: boolean) => void
 }
 
-export default function HomeHeaderAddressBox({ address = initialAddress, showAddressList} : IHomeHeaderAddressBoxProps) {
+export default function HomeHeaderAddressBox({ address, showAddressList} : IHomeHeaderAddressBoxProps) {
 
     return (
         <>

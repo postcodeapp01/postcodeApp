@@ -1,10 +1,9 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 import { appColors } from "../../app/common/utils/utils";
 
 export const AddressStyles = StyleSheet.create({
     addressListContainer: {
-        flex: 1,
-        padding: 10
+        padding: 10,
     },
     addressHeader: {
         fontSize: 18,

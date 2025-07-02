@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StatusBar,
   useColorScheme,
@@ -17,15 +17,19 @@ import { updateUserDetails } from './reduxSlices/UserSlice';
 import { RootState } from './Store';
 import { getItemFromAsyncStorag, getUserDetails } from './app/auth/authServices/AuthServices';
 import MyDrawer from './navigators/DrawerNavigator';
+import Loader from './app/common/utils/Loader';
 
 export default function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const userDetails = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     (async function() {
-      const accessToken = await getItemFromAsyncStorag('accessToken') || '';
+      setIsLoading(true) 
+      try {
+        const accessToken = await getItemFromAsyncStorag('accessToken') || '';
       if(accessToken) {
         getUserDetails(accessToken).then((response) => {
           const userData = {
@@ -39,6 +43,12 @@ export default function App(): React.JSX.Element {
           console.log('error while fetching user details', err);
         })
       }
+      } catch(err) {
+        console.log(err)
+      } finally {
+        setIsLoading(false);
+      }
+      
     })();
   }, []);
 
@@ -48,6 +58,7 @@ export default function App(): React.JSX.Element {
 
   return (
     <>
+    {isLoading ? <Loader /> : null}
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
