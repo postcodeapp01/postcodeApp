@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import Icon from 'react-native-vector-icons/AntDesign';
 import { LoginStyles } from "../../sources/styles/loginStyles";
 import { useNavigation } from "@react-navigation/native";
 

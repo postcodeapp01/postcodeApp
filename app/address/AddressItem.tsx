@@ -1,6 +1,6 @@
 import React from 'react';
-import { TouchableWithoutFeedback, Text,View, FlatList, TouchableOpacity } from 'react-native';
-import Icon from '@react-native-vector-icons/fontawesome6';
+import { Text,View, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome6';
 import { addressProps } from './AddressList';
 import { CommonStyles } from '../../sources/styles/common';
 import { AddressStyles } from '../../sources/styles/AddressStyles';
@@ -16,7 +16,7 @@ const AddressItem: React.FC<AddressItemProps> = ({ address, setSelectedAddress, 
   return (
     <TouchableOpacity style={AddressStyles.addressItemContainer} onPress={() =>{ setSelectedAddress(address), setShowPopup(false) }}>
         <View style={[CommonStyles.flexRow, { margin: 0.1, alignItems: 'center' }]}>
-          <Icon name='house' iconStyle="solid" size={20} />
+          <Icon name='house' size={20} />
           <Text style={[CommonStyles.marginHorizonalSm, { fontWeight: 500 }]}>{address.pincode}  - </Text>
           <Text style={{ fontWeight: 500 }}>{address?.label}</Text>
         </View>

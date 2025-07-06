@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, FlatList, Dimensions } from "react-native";
-import Icon from "@react-native-vector-icons/evil-icons";
+import Icon from "react-native-vector-icons/EvilIcons";
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { AddressStyles } from "../../sources/styles/AddressStyles";
 import { CommonStyles } from "../../sources/styles/common";
