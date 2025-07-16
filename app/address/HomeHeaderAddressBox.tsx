@@ -18,7 +18,7 @@ export default function HomeHeaderAddressBox({ address, showAddressList} : IHome
                 <View style={homeStyles.addressLabelContainer}>
                     <View style={[CommonStyles.flexRow, { marginRight: 10}]}>
                         <Icon name="location-dot" color="Black" size={16} />
-                        <Text style={homeStyles.addressLabelText}>{address.label.toUpperCase()}</Text>
+                        <Text style={homeStyles.addressLabelText}>{address?.label?.toUpperCase()}</Text>
                         <Text style={CommonStyles.fontWeight500}>|</Text>
                     </View>
                     <Text numberOfLines={1} ellipsizeMode="tail">{concatAddress(address)}</Text>

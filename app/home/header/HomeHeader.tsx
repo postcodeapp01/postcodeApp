@@ -1,10 +1,15 @@
-import React, { useState } from "react";
-import { View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Text, View } from "react-native";
 import homeStyles from "../../../sources/styles/HomeStyles";
 import HomeHeaderAddressBox from "../../address/HomeHeaderAddressBox";
 import HeaderCategories from "../../address/HeaderCategories";
 import withPopup from "../../common/hoc/withPopup";
 import AddressList, { addressProps } from "../../address/AddressList";
+import { Api } from "../../../config/Api";
+import { getItemFromAsyncStorage } from "../../common/utils/asyncStorage/AsyncStorageUtils";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../Store";
+import { getAddressDetails } from "../../address/AddressServices";
 
 const addressList = [
   {
@@ -31,7 +36,25 @@ const addressList = [
 
 export default function HomeHeader() {
   const [showPopup, setShowPopup] = useState<boolean>(true);
-  const [selectedAddress, setSelectedAddress] = useState<addressProps>(addressList[0]);
+  const [selectedAddress, setSelectedAddress] = useState<addressProps>({});
+  const [addressList, setAddressList] = useState<addressProps[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const userDetails = useSelector((state: RootState) => state.user);
+
+  useEffect(() => {
+    (async() => {
+      setIsLoading(true);
+      const { accessToken } = userDetails;
+      console.log(accessToken, 'hello accesToken')
+      getAddressDetails(accessToken).then(async (res) => {
+        console.log(res, 'hello response');
+      }).catch((err) => {
+        console.log(`error will getting the address details`, err);
+      }).finally(() => {
+        setIsLoading(false);
+      })
+    })();
+  }, []);
 
   const renderAddressPopup = (): React.ReactElement => {
     const WithAddressPopup = withPopup(AddressList, { togglePopup: setShowPopup });
@@ -43,6 +66,12 @@ export default function HomeHeader() {
       />
     );
   };
+
+  if(isLoading) {
+    return (
+      <Text>Loading...</Text>
+    )
+  }
 
   return (
     <>

@@ -15,7 +15,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import AuthStack from './navigators/stacks/AuthStack';
 import { updateUserDetails } from './reduxSlices/UserSlice';
 import { RootState } from './Store';
-import { getItemFromAsyncStorag, getUserDetails } from './app/auth/authServices/AuthServices';
+import { getUserDetails } from './app/auth/authServices/AuthServices';
+import { getItemFromAsyncStorage } from './app/common/utils/asyncStorage/AsyncStorageUtils';
 import MyDrawer from './navigators/DrawerNavigator';
 import Loader from './app/common/utils/Loader';
 
@@ -29,7 +30,7 @@ export default function App(): React.JSX.Element {
     (async function() {
       setIsLoading(true) 
       try {
-        const accessToken = await getItemFromAsyncStorag('accessToken') || '';
+        const accessToken = await getItemFromAsyncStorage('accessToken') || '';
       if(accessToken) {
         getUserDetails(accessToken).then((response) => {
           const userData = {

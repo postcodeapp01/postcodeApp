@@ -55,6 +55,7 @@ export default function OTPScreen({ route }: IOtpScreenProps) {
             if(res?.statusCode === 206) {
                 navigation.navigate('Signup', { phone, email });
             } else if(res?.statusCode === 200) {
+                console.log(res?.data?.accessToken, 'created accessToken')
                 AsyncStorage.setItem('accessToken', res?.data?.accessToken);
 
                 getUserDetails(res?.accessToken).then((response) => {
