@@ -1,20 +1,19 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+
+import axiosInstance from "../../../config/Api";
 import { Api } from "../../../config/Api";
 
 
 export async function validateOtp(phone: string, otp: string, email: string) {
     
     try {
-        const { data } = await axios.post(Api.validateOtp, {
+        const { data } = await axiosInstance.post(Api.validateOtp, {
             phone,
             email, 
             code: otp,
         })
-
         return data;
-    } catch (err) {
-        console.log("Error while validating otp", err?.response?.data || err?.message);
+    } catch (err: any) {
+        throw err?.data; 
     }
 }
 
@@ -44,8 +43,8 @@ export async function registerUser(userName: string, phoneNumber: string, email:
 
 export async function getUserDetails(accessToken: string) {
     try {
-        const { data } = await axios.get(Api.getUserDetails, 
-            { headers: { Authorization: `Bearer ${accessToken}` }
+        const { data } = await axiosInstance.get(Api.getUserDetails, 
+             { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
         });
         return data;
     } catch (err) {
@@ -53,6 +52,11 @@ export async function getUserDetails(accessToken: string) {
     }
 }
 
-export const updateUserDetailsInReducer = () => {
-
+export async function sendOtp(requestObj: { email: string, phone: string, name: string}) {
+    try {
+        const { data } = await axiosInstance.post(Api.sendOtp, requestObj);
+        return data;
+    } catch(err: any) {
+        throw err?.data
+    }
 }

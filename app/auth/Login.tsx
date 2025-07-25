@@ -3,7 +3,7 @@ import { View, Text, ImageBackground, TextInput, Dimensions } from "react-native
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { LoginStyles } from "../../sources/styles/loginStyles";
-import { Api, domainUrl } from "../../config/Api";
+import { Api } from "../../config/Api";
 import Button from "../common/Button";
 import Divider from "../common/Divider";
 import Loader from "../common/utils/Loader";
