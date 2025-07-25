@@ -52,7 +52,7 @@ export async function getUserDetails(accessToken: string) {
     }
 }
 
-export async function sendOtp(requestObj: { email: string, phone: string, name: string}) {
+export async function sendOtp(requestObj: { email: string | null, phone: string | null, name: string | null}) {
     try {
         const { data } = await axiosInstance.post(Api.sendOtp, requestObj);
         return data;

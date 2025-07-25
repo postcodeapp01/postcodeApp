@@ -45,7 +45,6 @@ export default function HomeHeader() {
     (async() => {
       setIsLoading(true);
       const { accessToken } = userDetails;
-      console.log(accessToken, 'hello accesToken')
       getAddressDetails(accessToken).then(async (res) => {
         console.log(res, 'hello response');
       }).catch((err) => {

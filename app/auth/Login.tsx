@@ -3,7 +3,7 @@ import { View, Text, ImageBackground, TextInput, Dimensions } from "react-native
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { LoginStyles } from "../../sources/styles/loginStyles";
-import { Api } from "../../config/Api";
+import { sendOtp } from "./authServices/AuthServices";
 import Button from "../common/Button";
 import Divider from "../common/Divider";
 import Loader from "../common/utils/Loader";
@@ -46,22 +46,10 @@ export default function Login() {
             email: userId.includes('@') ? userId : null
         }
         setIsLoading(true);
-        fetch(
-            Api.sendOtp, 
-            { 
-                method: 'post',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }, 
-                body: JSON.stringify(requestObject)
-            }, 
-        ).then(async res => {
-            const response = await res.json();
-            console.log(response)
+        sendOtp(requestObject).then(response => {
             if(response.statusCode === 429 || response.statusCode === 400) {
                 setErrorMessage(response.message)
-            } else if(res.status === 200) {
+            } else if(response.statusCode === 200) {
                 navigation.navigate('OtpScreen', requestObject);
             }
         }).catch((err) => {
