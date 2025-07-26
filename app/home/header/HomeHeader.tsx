@@ -5,8 +5,6 @@ import HomeHeaderAddressBox from "../../address/HomeHeaderAddressBox";
 import HeaderCategories from "../../address/HeaderCategories";
 import withPopup from "../../common/hoc/withPopup";
 import AddressList, { addressProps } from "../../address/AddressList";
-import { Api } from "../../../config/Api";
-import { getItemFromAsyncStorage } from "../../common/utils/asyncStorage/AsyncStorageUtils";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../Store";
 import { getAddressDetails } from "../../address/AddressServices";
