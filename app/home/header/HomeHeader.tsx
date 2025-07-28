@@ -4,38 +4,16 @@ import homeStyles from "../../../sources/styles/HomeStyles";
 import HomeHeaderAddressBox from "../../address/HomeHeaderAddressBox";
 import HeaderCategories from "../../address/HeaderCategories";
 import withPopup from "../../common/hoc/withPopup";
-import AddressList, { addressProps } from "../../address/AddressList";
+import AddressList, { addressProps, addressListProps } from "../../address/AddressList";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../Store";
 import { getAddressDetails } from "../../address/AddressServices";
 
-const addressList = [
-  {
-    id: 1,
-    label: 'Home',
-    houseNumber: '18-6-661',
-    addressLine1: 'Laldarwaza South',
-    addressLine2: 'Aliyabad',
-    state: 'Telangana',
-    city: 'Hyderabad',
-    pincode: 500053
-  },
-  {
-    id: 2,
-    label: 'Office',
-    houseNumber: '18-6-661',
-    addressLine1: 'Laldarwaza South',
-    addressLine2: 'Near Mahankali temple',
-    state: 'Telangana',
-    city: 'Hyderabad',
-    pincode: 500053
-  }
-];
-
 export default function HomeHeader() {
   const [showPopup, setShowPopup] = useState<boolean>(true);
   const [selectedAddress, setSelectedAddress] = useState<addressProps>({});
-  const [addressList, setAddressList] = useState<addressProps[]>([]);
+  const [addressList, setAddressList] = useState<addressListProps>({});
+  console.log(addressList, 'hello')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const userDetails = useSelector((state: RootState) => state.user);
 
@@ -44,7 +22,10 @@ export default function HomeHeader() {
       setIsLoading(true);
       const { accessToken } = userDetails;
       getAddressDetails(accessToken).then(async (res) => {
-        console.log(res, 'hello response');
+        res.address = [...res.address, ...res.address]
+        if(res.status === 200) {
+          setAddressList(res);
+        }
       }).catch((err) => {
         console.log(`error will getting the address details`, err);
       }).finally(() => {
@@ -57,7 +38,7 @@ export default function HomeHeader() {
     const WithAddressPopup = withPopup(AddressList, { togglePopup: setShowPopup });
     return (
       <WithAddressPopup
-        addressList={addressList}
+        addressList={addressList?.address}
         setSelectedAddress={setSelectedAddress}
         setShowPopup={setShowPopup}
       />

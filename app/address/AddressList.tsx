@@ -17,14 +17,21 @@ export interface addressProps {
     pincode: number
 }
 
-interface AddressListProps {
+export interface addressListProps {
+    address: addressProps[];
+    status: number;
+    count: number;
+    next: string;
+    prev: string;
+}
+
+interface AddressListCompProps {
     addressList: addressProps[];
     setSelectedAddress: React.Dispatch<React.SetStateAction<addressProps>>;
     setShowPopup: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function AddressList({ addressList, setSelectedAddress, setShowPopup }: AddressListProps) {
-
+export default function AddressList({ addressList, setSelectedAddress, setShowPopup }: AddressListCompProps) {
     const renderAddressList = (): React.ReactElement => {
         return (
             <FlatList
@@ -44,6 +51,7 @@ export default function AddressList({ addressList, setSelectedAddress, setShowPo
                 ListHeaderComponent={
                     <Text style={CommonStyles.marginVerticalSm}>Saved Address</Text>
                 }
+                onEndReached={() => console.log("Hey")}
             />
         )
     }

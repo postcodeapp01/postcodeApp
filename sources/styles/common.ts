@@ -79,7 +79,6 @@ export const CommonStyles = StyleSheet.create({
     },
     popupContainer: {
         display: 'flex',
-        width,
         position: 'absolute',
         top: 0,
         left: 0,
