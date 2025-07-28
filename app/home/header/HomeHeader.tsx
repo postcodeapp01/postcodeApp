@@ -13,7 +13,6 @@ export default function HomeHeader() {
   const [showPopup, setShowPopup] = useState<boolean>(true);
   const [selectedAddress, setSelectedAddress] = useState<addressProps>({});
   const [addressList, setAddressList] = useState<addressListProps>({});
-  console.log(addressList, 'hello')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const userDetails = useSelector((state: RootState) => state.user);
 
