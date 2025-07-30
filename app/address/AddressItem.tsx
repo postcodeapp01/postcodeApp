@@ -1,7 +1,8 @@
 import React from 'react';
-import { Text,View, TouchableOpacity } from 'react-native';
+import { Text,View, TouchableOpacity, GestureResponderEvent } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome6';
 import { addressProps } from './AddressList';
+import { deleteAddress } from './AddressServices';
 import { CommonStyles } from '../../sources/styles/common';
 import { AddressStyles } from '../../sources/styles/AddressStyles';
 import { concatAddress } from '../common/utils/common';
@@ -13,6 +14,13 @@ type AddressItemProps = {
 };
 
 const AddressItem: React.FC<AddressItemProps> = ({ address, setSelectedAddress, setShowPopup }) => {
+  
+  const deleteSelectedAddress = (e: GestureResponderEvent) => {
+    e.stopPropagation()
+    deleteAddress(address.id).then(() => {
+
+    })
+  }
   return (
     <TouchableOpacity style={AddressStyles.addressItemContainer} onPress={() =>{ setSelectedAddress(address), setShowPopup(false) }}>
         <View style={[CommonStyles.flexRow, { margin: 0.1, alignItems: 'center' }]}>
@@ -26,7 +34,7 @@ const AddressItem: React.FC<AddressItemProps> = ({ address, setSelectedAddress, 
             <Text style={CommonStyles.fontWeight}>Edit</Text>
           </TouchableOpacity>
           <Text>|</Text>
-          <TouchableOpacity onPress={(e) => e.stopPropagation()} style={CommonStyles.marginHorizonalSm}>
+          <TouchableOpacity onPress={(e) => deleteSelectedAddress(e)} style={CommonStyles.marginHorizonalSm}>
             <Text style={CommonStyles.fontWeight}>Delete</Text>
           </TouchableOpacity>
         </View>

@@ -1,13 +1,14 @@
-import React from "react";
-import { View, Text, FlatList, Dimensions } from "react-native";
-import Icon from "react-native-vector-icons/EvilIcons";
-import { AddressStyles } from "../../sources/styles/AddressStyles";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { View, Text, FlatList } from "react-native";
 import { CommonStyles } from "../../sources/styles/common";
 import AddressItem from "./AddressItem";
 import Button from "../common/Button";
+import { getAddressDetails , getPaginatedAddressList} from "./AddressServices";
+import Loader from "../common/utils/Loader";
 
 export interface addressProps {
-    id: number,
+    id: string,
     label: string,
     houseNumber: string,
     addressLine1: string,
@@ -26,16 +27,56 @@ export interface addressListProps {
 }
 
 interface AddressListCompProps {
-    addressList: addressProps[];
     setSelectedAddress: React.Dispatch<React.SetStateAction<addressProps>>;
-    setShowPopup: React.Dispatch<React.SetStateAction<boolean>>;
+    setShowPopup?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function AddressList({ addressList, setSelectedAddress, setShowPopup }: AddressListCompProps) {
+export default function AddressList({ setSelectedAddress, setShowPopup }: AddressListCompProps) {
+    const [addressList, setAddressList] = useState<addressListProps>({});
+    const [isLoading, setIsLoading]= useState<boolean>(false);
+    const [loadingMore, setLoadingMore] = useState<boolean>(false);
+
+    useEffect(() => {
+          getAddressData();
+      }, []);
+
+      const getAddressData = () => {
+        setIsLoading(true);  
+        getAddressDetails().then(async (res) => {
+            if(res.status === 200) {
+              setAddressList(res);
+            }
+        }).catch((err) => {
+            console.log(`error will getting the address details`, err);
+        }).finally(() => {
+            setIsLoading(false);
+        })
+      }
+
+      const loadMoreData = async () => {
+        if (loadingMore) return;
+        setLoadingMore(true);
+      
+        try {
+          const newData = await getPaginatedAddressList(addressList?.next);
+          const updatedAddressList = {...addressList};
+          updatedAddressList.next = newData.next;
+          updatedAddressList.prev = newData.prev;
+          updatedAddressList.address = [...updatedAddressList.address, ...newData.address]
+          setAddressList(updatedAddressList);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoadingMore(false);
+        }
+      };
+      
+    
+
     const renderAddressList = (): React.ReactElement => {
         return (
             <FlatList
-                data={addressList}
+                data={addressList?.address}
                 contentContainerStyle={{ paddingBottom: 50 }}
                 renderItem={({ item }) => (
                     <AddressItem address={item} setSelectedAddress={setSelectedAddress} setShowPopup={setShowPopup} />
@@ -51,17 +92,16 @@ export default function AddressList({ addressList, setSelectedAddress, setShowPo
                 ListHeaderComponent={
                     <Text style={CommonStyles.marginVerticalSm}>Saved Address</Text>
                 }
-                onEndReached={() => console.log("Hey")}
+                onEndReached={() => {
+                    if(addressList?.next) loadMoreData()
+                }}
             />
         )
     }
-    return (
-                <View style={AddressStyles.addressListContainer}>
-                    <View style={[CommonStyles.flexRow, CommonStyles.spaceBetween, AddressStyles.addressListHeaderContainer]}>
-                        <Text style={AddressStyles.addressHeader}>Select Delivery Address</Text>
-                        <Icon name="close" size={30} onPress={() => setShowPopup(false)} />
-                    </View>
-                    {renderAddressList()}
-                </View>
-    )
+
+    if(isLoading) {
+        return <Loader />
+    }
+    return  renderAddressList()
+    
 }

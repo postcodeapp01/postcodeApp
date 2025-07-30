@@ -21,7 +21,7 @@ const withPopup = <P extends {}>(Component: React.ComponentType<P>, { popUpPosit
         }
     }
     return (props: P) => (
-        <Pressable style={[CommonStyles.popupContainer, { justifyContent: getPosition()}, {...style}]} onPress={() => togglePopup(false)}>
+        <Pressable style={[CommonStyles.popupContainer, { justifyContent: getPosition()}, {...style}]} onPress={() => togglePopup(false)} pointerEvents="box-none">
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
             <View style={[CommonStyles.popupContentContainer]}>
                 <Component {...props} />

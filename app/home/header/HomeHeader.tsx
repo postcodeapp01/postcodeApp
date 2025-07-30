@@ -1,54 +1,52 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Text, View } from "react-native";
+import { Modal } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/EvilIcons";
 import homeStyles from "../../../sources/styles/HomeStyles";
 import HomeHeaderAddressBox from "../../address/HomeHeaderAddressBox";
 import HeaderCategories from "../../address/HeaderCategories";
-import withPopup from "../../common/hoc/withPopup";
-import AddressList, { addressProps, addressListProps } from "../../address/AddressList";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../Store";
-import { getAddressDetails } from "../../address/AddressServices";
+import AddressList, { addressProps } from "../../address/AddressList";
+import { AddressStyles } from "../../../sources/styles/AddressStyles";
+import { CommonStyles } from "../../../sources/styles/common";
+
 
 export default function HomeHeader() {
   const [showPopup, setShowPopup] = useState<boolean>(true);
   const [selectedAddress, setSelectedAddress] = useState<addressProps>({});
-  const [addressList, setAddressList] = useState<addressListProps>({});
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const userDetails = useSelector((state: RootState) => state.user);
 
-  useEffect(() => {
-    (async() => {
-      setIsLoading(true);
-      const { accessToken } = userDetails;
-      getAddressDetails(accessToken).then(async (res) => {
-        res.address = [...res.address, ...res.address]
-        if(res.status === 200) {
-          setAddressList(res);
-        }
-      }).catch((err) => {
-        console.log(`error will getting the address details`, err);
-      }).finally(() => {
-        setIsLoading(false);
-      })
-    })();
-  }, []);
 
-  const renderAddressPopup = (): React.ReactElement => {
-    const WithAddressPopup = withPopup(AddressList, { togglePopup: setShowPopup });
+  const renderAddressList = () => {
     return (
-      <WithAddressPopup
-        addressList={addressList?.address}
-        setSelectedAddress={setSelectedAddress}
-        setShowPopup={setShowPopup}
-      />
-    );
-  };
-
-  if(isLoading) {
-    return (
-      <Text>Loading...</Text>
+      <View style={AddressStyles.addressListContainer}>
+        <View style={[CommonStyles.flexRow, CommonStyles.spaceBetween, AddressStyles.addressListHeaderContainer]}>
+          <Text style={AddressStyles.addressHeader}>Select Delivery Address</Text>
+          <Icon name="close" size={30} onPress={() => setShowPopup(false)} />
+        </View>
+        <AddressList setSelectedAddress={setSelectedAddress} setShowPopup={setShowPopup} />
+      </View>
     )
   }
+
+  const renderAddressPopup = (): React.ReactElement => {
+    return (
+      <SafeAreaProvider>
+        <SafeAreaView>
+          <Modal 
+            visible={showPopup} 
+            onRequestClose={() => setShowPopup(false)}
+            transparent
+          >
+            <View style={[CommonStyles.popupContainer, { justifyContent: 'flex-end'}]}>
+              <View style={CommonStyles.popupContentContainer}>
+                {renderAddressList()}
+              </View>
+            </View>
+          </Modal>
+        </SafeAreaView>
+      </SafeAreaProvider>
+    )
+  };
 
   return (
     <>
@@ -58,7 +56,6 @@ export default function HomeHeader() {
           address={selectedAddress}
           showAddressList={() => setShowPopup(true)}
         />
-        {/* 🔍 Removed HeaderInputBox */}
         <HeaderCategories />
       </View>
     </>
