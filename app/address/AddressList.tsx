@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { View, Text, FlatList } from "react-native";
+import { useNavigation } from "@react-navigation/core";
 import { CommonStyles } from "../../sources/styles/common";
 import AddressItem from "./AddressItem";
 import Button from "../common/Button";
 import { getAddressDetails , getPaginatedAddressList} from "./AddressServices";
 import Loader from "../common/utils/Loader";
+import { HomeStackParamList } from "../../navigators/stacks/HomeStack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 export interface addressProps {
     id: string,
@@ -22,8 +24,8 @@ export interface addressListProps {
     address: addressProps[];
     status: number;
     count: number;
-    next: string;
-    prev: string;
+    next: string | null;
+    prev: string | null;
 }
 
 interface AddressListCompProps {
@@ -31,10 +33,21 @@ interface AddressListCompProps {
     setShowPopup?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+type AddAddressNavProp = NativeStackNavigationProp<HomeStackParamList, 'AddAddress'>;
+
+const addressListInitialValues: addressListProps = {
+    address: [],
+    next: null,
+    prev: null,
+    status: 0,
+    count: 0
+}
+
 export default function AddressList({ setSelectedAddress, setShowPopup }: AddressListCompProps) {
-    const [addressList, setAddressList] = useState<addressListProps>({});
+    const [addressList, setAddressList] = useState<addressListProps>(addressListInitialValues);
     const [isLoading, setIsLoading]= useState<boolean>(false);
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
+    const navigation = useNavigation<AddAddressNavProp>();
 
     useEffect(() => {
           getAddressData();
@@ -54,20 +67,21 @@ export default function AddressList({ setSelectedAddress, setShowPopup }: Addres
       }
 
       const loadMoreData = async () => {
-        if (loadingMore) return;
-        setLoadingMore(true);
-      
-        try {
-          const newData = await getPaginatedAddressList(addressList?.next);
-          const updatedAddressList = {...addressList};
-          updatedAddressList.next = newData.next;
-          updatedAddressList.prev = newData.prev;
-          updatedAddressList.address = [...updatedAddressList.address, ...newData.address]
-          setAddressList(updatedAddressList);
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setLoadingMore(false);
+        if(addressList?.next) {
+            if (loadingMore) return;
+            setLoadingMore(true);
+            try {
+                const newData = await getPaginatedAddressList(addressList.next);
+                const updatedAddressList = {...addressList};
+                updatedAddressList.next = newData.next;
+                updatedAddressList.prev = newData.prev;
+                updatedAddressList.address = [...updatedAddressList.address, ...newData.address]
+                setAddressList(updatedAddressList);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoadingMore(false);
+            }
         }
       };
       
@@ -79,22 +93,20 @@ export default function AddressList({ setSelectedAddress, setShowPopup }: Addres
                 data={addressList?.address}
                 contentContainerStyle={{ paddingBottom: 50 }}
                 renderItem={({ item }) => (
-                    <AddressItem address={item} setSelectedAddress={setSelectedAddress} setShowPopup={setShowPopup} />
+                    <AddressItem address={item} setSelectedAddress={setSelectedAddress} setShowPopup={setShowPopup} getAddressData={getAddressData} />
                 )}
                 keyExtractor={(item) => item.id.toString()}
                 scrollEnabled
                 showsVerticalScrollIndicator
                 ListFooterComponent={
                     <View style={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button type="primary" text="Add Address" onClick={() => { }} />
+                        <Button type="primary" text="Add Address" onClick={() => navigation.navigate('AddAddress')} />
                     </View>
                 }
                 ListHeaderComponent={
                     <Text style={CommonStyles.marginVerticalSm}>Saved Address</Text>
                 }
-                onEndReached={() => {
-                    if(addressList?.next) loadMoreData()
-                }}
+                onEndReached={() => loadMoreData()}
             />
         )
     }

@@ -48,7 +48,7 @@ export async function getUserDetails(accessToken: string) {
         });
         return data;
     } catch (err) {
-        console.log('error while fetching user details', err);
+       throw err;
     }
 }
 

@@ -19,5 +19,16 @@ export const AddressStyles = StyleSheet.create({
         borderBottomColor: appColors.borderColor,
         borderBottomWidth: 1,
         paddingVertical: 10
+    },
+    addAddressContainer: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        margin: 15
+    },
+    inputStyle: {
+        backgroundColor: 'white',
+        height: 42
     }
 });

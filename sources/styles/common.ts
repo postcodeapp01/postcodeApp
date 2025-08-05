@@ -101,5 +101,14 @@ export const CommonStyles = StyleSheet.create({
         textAlign: 'center',
         color: 'red',
         margin: 10
+    },
+    groupButtonStyle: {
+        backgroundColor: '#E6E6E6',
+        paddingHorizontal: 20,
+        paddingVertical: 5,
+        borderRadius: 5,
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: '#464646'
     }
 })

@@ -10,19 +10,20 @@ import { concatAddress } from '../common/utils/common';
 type AddressItemProps = {
   address: addressProps;
   setSelectedAddress: React.Dispatch<React.SetStateAction<addressProps>>;
-  setShowPopup: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowPopup?: React.Dispatch<React.SetStateAction<boolean>>;
+  getAddressData: () => void;
 };
 
-const AddressItem: React.FC<AddressItemProps> = ({ address, setSelectedAddress, setShowPopup }) => {
+const AddressItem: React.FC<AddressItemProps> = ({ address, setSelectedAddress, setShowPopup = () => {}, getAddressData = () => {}}) => {
   
   const deleteSelectedAddress = (e: GestureResponderEvent) => {
     e.stopPropagation()
     deleteAddress(address.id).then(() => {
-
+      getAddressData();
     })
   }
   return (
-    <TouchableOpacity style={AddressStyles.addressItemContainer} onPress={() =>{ setSelectedAddress(address), setShowPopup(false) }}>
+    <TouchableOpacity style={AddressStyles.addressItemContainer} onPress={() =>{ setSelectedAddress(address); setShowPopup(false) }}>
         <View style={[CommonStyles.flexRow, { margin: 0.1, alignItems: 'center' }]}>
           <Icon name='house' size={20} />
           <Text style={[CommonStyles.marginHorizonalSm, { fontWeight: 500 }]}>{address.pincode}  - </Text>

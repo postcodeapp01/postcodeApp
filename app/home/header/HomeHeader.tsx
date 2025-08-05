@@ -13,7 +13,7 @@ import { CommonStyles } from "../../../sources/styles/common";
 
 export default function HomeHeader() {
   const [showPopup, setShowPopup] = useState<boolean>(true);
-  const [selectedAddress, setSelectedAddress] = useState<addressProps>({});
+  const [selectedAddress, setSelectedAddress] = useState<addressProps | {}>({});
 
 
   const renderAddressList = () => {

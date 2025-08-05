@@ -9,6 +9,7 @@ import Button from "../common/Button";
 import { updateUserDetails } from "../../reduxSlices/UserSlice";
 import { useDispatch } from "react-redux";
 import Loader from "../common/utils/Loader";
+import { setItemInAsyncStorage } from "../common/utils/asyncStorage/AsyncStorageUtils";
 
 const RESEND_OTP_SECONDS = 30;
 
@@ -65,8 +66,8 @@ const OTPScreen: React.FC<IOtpScreenProps> = ({ route }) => {
       if (res.statusCode === 206) {
         navigation.navigate('Signup', { phone, email });
       } else if (res.statusCode === 200) {
-        await AsyncStorage.setItem('accessToken', res.data.accessToken);
-
+        await setItemInAsyncStorage('accessToken', res.data.accessToken);
+        await setItemInAsyncStorage('refreshToken', res.data.refreshToken);
         const response = await getUserDetails(res.data.accessToken);
 
         const userData = {

@@ -4,11 +4,13 @@ import HomeScreen from '../../app/home/Home';
 import HomeHeader from '../../app/home/header/HomeHeader';
 import SearchScreen from '../../app/screens/SearchScreen';
 import ProductDetails from '../../app/screens/ProductDetails';
+import AddAddress from '../../app/address/AddAddress';
 
 export type HomeStackParamList = {
   HomeScreen: undefined;
   SearchScreen: undefined;
-  ProductDetails: { product: any }; // You can refine `any` later
+  ProductDetails: { product: any };
+  AddAddress: undefined;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -35,6 +37,13 @@ export default function MyStack() {
         component={ProductDetails}
         options={{
           title: 'Product Details',
+        }}
+      />
+      <Stack.Screen
+        name="AddAddress"
+        component={AddAddress}
+        options={{
+          title: "Select Delivery Location"
         }}
       />
     </Stack.Navigator>
