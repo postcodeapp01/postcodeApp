@@ -1,0 +1,48 @@
+export const recommendedProducts = [
+  {
+    id: '1',
+    name: 'Casual Cotton T-Shirt for Men',
+    image: require('../../../sources/images/store.png'),
+    price: '599',
+    originalPrice: '999',
+    rating: '4.2',
+  },
+  {
+    id: '2',
+    name: 'Women Ethnic Kurta Set',
+    image: require('../../../sources/images/store.png'),
+    price: '1299',
+    originalPrice: '2199',
+    rating: '4.5',
+  },
+  {
+    id: '3',
+    name: 'Pink Dress for Girls',
+    image: require('../../../sources/images/store.png'),
+    price: '899',
+    rating: '4.1',
+  },
+  {
+    id: '4',
+    name: 'Kids Blue T-Shirt with Print',
+    image: require('../../../sources/images/store.png'),
+    price: '449',
+    originalPrice: '699',
+    rating: '4.3',
+  },
+  {
+    id: '5',
+    name: 'Women Traditional Wear',
+    image: require('../../../sources/images/store.png'),
+    price: '1599',
+    rating: '4.4',
+  },
+  {
+    id: '6',
+    name: 'Men Leather Watch',
+    image: require('../../../sources/images/store.png'),
+    price: '2999',
+    originalPrice: '4999',
+    rating: '4.6',
+  },
+];

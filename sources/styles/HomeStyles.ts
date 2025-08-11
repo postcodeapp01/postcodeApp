@@ -6,7 +6,7 @@ const homeStyles = StyleSheet.create({
   homeContainer: {
     flex: 1,
     flexGrow: 1,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   homeHeaderContainer: {
     padding: 10,

@@ -11,10 +11,10 @@ type Props = {
 
 const ProductDetails: React.FC<Props> = ({ route }) => {
   const { product } = route.params;
-
+  console.log("In details page",product)
   return (
     <View style={styles.container}>
-      <Image source={{ uri: product.imageUrl }} style={styles.image} />
+      <Image source={ product.image } style={styles.image} />
       <Text style={styles.name}>{product.name}</Text>
       <Text style={styles.price}>₹{product.price}</Text>
     </View>
