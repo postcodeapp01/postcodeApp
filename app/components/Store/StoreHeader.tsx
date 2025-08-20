@@ -13,7 +13,7 @@ const StoreHeader: React.FC = () => {
         {/* Back Button */}
         <TouchableOpacity 
           style={styles.backButton} 
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => navigation.navigate('HomeScreen')}
         >
           <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>

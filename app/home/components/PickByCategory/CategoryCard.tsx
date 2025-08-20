@@ -1,9 +1,9 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import {Category} from './types';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { HomeStackParamList } from '../../../../navigators/stacks/HomeStack';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {HomeStackParamList} from '../../../../navigators/stacks/HomeStack';
 
 interface CategoryCardProps {
   category: Category;
@@ -18,20 +18,18 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
 
   onPress,
 }) => {
-   const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp>();
 
   const handlePress = () => {
     if (onPress) {
       onPress(); // run custom action first
     }
     // Navigate to products screen with category parameter
-    console.log("hiii",category);
+    // console.log("hiii ???????",category.name,category.subcategory);
     navigation.navigate('ProductsScreen', {
-      categoryName: category.category,
-      subcategory: category.subcategory ?? null, // safe fallback
+      id: category.id,
     });
-    console.log("hiii",category.category);
-
+    // console.log('hiii.......', category.id);
   };
   return (
     <TouchableOpacity
@@ -42,13 +40,13 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       ]}
       onPress={handlePress}>
       <Image
-        source={category.image}
+        source={{uri: category.image}}
         style={[styles.image, isLarge ? styles.largeImage : styles.smallImage]}
         resizeMode="cover"
       />
       <Text
         style={[styles.text, isLarge ? styles.largeText : styles.smallText]}>
-        {category.subcategory}
+        {category.name}
       </Text>
     </TouchableOpacity>
   );
@@ -64,7 +62,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingVertical: 8,
     paddingHorizontal: 6,
-    marginTop:0
+    marginTop: 0,
   },
   largeCard: {
     width: 92.07,
@@ -76,7 +74,7 @@ const styles = StyleSheet.create({
   smallCard: {
     width: 80,
     height: 86,
-    margin:0,
+    margin: 0,
   },
   image: {
     width: '100%',

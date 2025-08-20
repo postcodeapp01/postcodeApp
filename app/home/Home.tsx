@@ -40,7 +40,7 @@
 //     fontSize: 16,
 //   },
 // });
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -57,6 +57,10 @@ import {HomeStackParamList} from '../../navigators/stacks/HomeStack';
 import PickByCategory from './components/PickByCategory/PickByCategory';
 import ShopByBrands from './components/ShopByBrands/ShopByBrands';
 import DeliveringNearYou from './components/DeliveringNearYou/DeliveringNearYou';
+import {fetchStores} from '../../reduxSlices/storeSlice';
+import {AppDispatch} from '../../Store';
+import {useDispatch} from 'react-redux';
+import { fetchCategories } from '../../reduxSlices/categorySlice';
 
 type NavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -65,7 +69,13 @@ type NavigationProp = NativeStackNavigationProp<
 
 export default function Home() {
   const navigation = useNavigation<NavigationProp>();
-
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    // ✅ Fetch all global data when home loads
+    dispatch(fetchStores());
+    dispatch(fetchCategories());
+    // dispatch(fetchBrands());
+  }, [dispatch]);
   return (
     <ScrollView
       style={homeStyles.homeContainer}
@@ -83,11 +93,10 @@ export default function Home() {
       {/* Nearby Stores Section */}
       <NearbyStores />
       <PickByCategory />
-      
+
       <ShopByBrands />
-      <DeliveringNearYou/>
+      <DeliveringNearYou />
       <ShopByBrands />
-      
     </ScrollView>
   );
 }

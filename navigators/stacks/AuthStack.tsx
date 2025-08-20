@@ -5,10 +5,7 @@ import Signup from '../../app/auth/SignUp';
 import OTPScreen from '../../app/auth/OTPScreen';
 import FlashScreen from '../../app/auth/FlashScreen';
 import CustomHeader from '../../app/common/CustomHeader';
-import Home from '../../app/home/Home';
-import StoreScreen from '../../app/screens/StoreScreen';
-import ProductDetails from '../../app/screens/ProductDetails';
-import ProductsScreen from '../../app/screens/ProductScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -35,11 +32,7 @@ export default function AuthStack() {
         }}
       />
       <Stack.Screen name="Signup" component={Signup} />
-      <Stack.Screen
-        name="StoreScreen"
-        component={StoreScreen}
-        options={{headerShown: false}}
-      />
+      
     </Stack.Navigator>
   );
 }

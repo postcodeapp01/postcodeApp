@@ -6,16 +6,16 @@ import SearchScreen from '../../app/screens/SearchScreen';
 import ProductDetails from '../../app/screens/ProductDetails';
 import AddAddress from '../../app/address/AddAddress';
 import StoreScreen from '../../app/screens/StoreScreen';
-import ProductsScreen from '../../app/screens/ProductScreen';
+import ProductsScreen from '../../app/screens/ProductsScreen';
 
 export type HomeStackParamList = {
   HomeScreen: undefined;
   SearchScreen: undefined;
-  ProductDetails: { product: any };
+  StoreScreen: undefined;
+  ProductDetails: {id:string ,resetStack?:boolean};
   AddAddress: undefined;
   ProductsScreen: {
-    categoryName: string;
-    subcategory: string | null;
+    id:number;
   };
 };
 
@@ -24,6 +24,7 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 export default function MyStack() {
   return (
     <Stack.Navigator>
+      
       <Stack.Screen
         name="HomeScreen"
         component={HomeScreen}
@@ -36,6 +37,21 @@ export default function MyStack() {
         component={SearchScreen}
         options={{
           title: 'Search Products',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="ProductsScreen"
+        component={ProductsScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="StoreScreen"
+        component={StoreScreen}
+        options={{
+          headerShown: false,
         }}
       />
       <Stack.Screen
@@ -43,12 +59,6 @@ export default function MyStack() {
         component={ProductDetails}
         options={{
           title: 'Product Details',
-        }}
-      />
-      <Stack.Screen
-        name="ProductsScreen"
-        component={ProductsScreen}
-        options={{
           headerShown: false,
         }}
       />

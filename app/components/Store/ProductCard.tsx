@@ -19,6 +19,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, isLeftColumn, onPress }) => {
+  // console.log('ProductCard: ', product);
   return (
     <TouchableOpacity 
       style={[
@@ -30,7 +31,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isLeftColumn, onPres
       {/* Product Image */}
       <View style={styles.imageContainer}>
         <Image
-          source={product.image}
+          source={{uri:product.image}}
           style={styles.productImage}
           resizeMode="cover"
         />

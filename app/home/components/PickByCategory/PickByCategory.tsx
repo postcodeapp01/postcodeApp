@@ -1,17 +1,26 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
-import {categoryData} from './categoryData';
 import CategoryCard from './CategoryCard';
+import {RootState} from '../../../../Store';
+import {useSelector} from 'react-redux';
 
 const PickByCategory: React.FC = () => {
-  const womenCategory = categoryData.find(c => c.subcategory === 'Women');
-  const menCategory = categoryData.find(c => c.subcategory === 'Men');
-
-  const womenSubcategories = categoryData.filter(
-    c => c.category === 'Women' && c.subcategory !== 'Women',
+  const {categories} = useSelector(
+    (state: RootState) => state.categories,
   );
-  const menSubcategories = categoryData.filter(
-    c => c.category === 'Men' && c.subcategory !== 'Men',
+
+  // Level 1 categories
+  const womenCategory = categories.find(
+    c => c.name === 'Women' && c.level === 1,
+  );
+  const menCategory = categories.find(c => c.name === 'Men' && c.level === 1);
+
+  // Level 2 subcategories
+  const womenSubcategories = categories.filter(
+    c => c.parent_id === womenCategory?.id,
+  );
+  const menSubcategories = categories.filter(
+    c => c.parent_id === menCategory?.id,
   );
 
   return (
@@ -22,9 +31,9 @@ const PickByCategory: React.FC = () => {
         <View style={styles.row}>
           {womenCategory && (
             <CategoryCard
-              category={womenCategory}
+              category={{...womenCategory, subcategory: womenCategory.name}}
               isLarge={true}
-              onPress={() => console.log(`Pressed ${womenCategory.subcategory}`)}
+              onPress={() => console.log(`Pressed ${womenCategory.name}`)}
             />
           )}
           <ScrollView
@@ -34,9 +43,13 @@ const PickByCategory: React.FC = () => {
             {womenSubcategories.map(category => (
               <View key={category.id} style={styles.cardSpacing}>
                 <CategoryCard
-                  category={category}
+                  category={{
+                    ...category,
+                    subcategory: category.name,
+                    category: 'Women',
+                  }}
                   isLarge={false}
-                  onPress={() => console.log(`Pressed ${category.subcategory}`)}
+                  onPress={() => console.log(`Pressed ........${category.name } ${category.id}`)}
                 />
               </View>
             ))}
@@ -47,9 +60,9 @@ const PickByCategory: React.FC = () => {
         <View style={styles.row}>
           {menCategory && (
             <CategoryCard
-              category={menCategory}
+              category={{...menCategory, subcategory: menCategory.name}}
               isLarge={true}
-              onPress={() => console.log(`Pressed ${menCategory.subcategory}`)}
+              onPress={() => console.log(`Pressed ${menCategory.name}`)}
             />
           )}
           <ScrollView
@@ -59,9 +72,13 @@ const PickByCategory: React.FC = () => {
             {menSubcategories.map(category => (
               <View key={category.id} style={styles.cardSpacing}>
                 <CategoryCard
-                  category={category}
+                  category={{
+                    ...category,
+                    subcategory: category.name,
+                    category: 'Men',
+                  }}
                   isLarge={false}
-                  onPress={() => console.log(`Pressed ${category.subcategory}`)}
+                  onPress={() => console.log(`Pressed ${category.name}`)}
                 />
               </View>
             ))}
@@ -95,7 +112,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 10,
-    marginTop: 0
+    marginTop: 0,
   },
   scrollRow: {
     height: 86,
