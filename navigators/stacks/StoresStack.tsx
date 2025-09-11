@@ -7,7 +7,7 @@ const Stack = createNativeStackNavigator();
 export default function StoreStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="StoresStack" component={Stores} />
+      <Stack.Screen name="Stores" component={Stores} />
     </Stack.Navigator>
   );
 }

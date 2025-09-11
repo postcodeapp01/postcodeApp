@@ -1,505 +1,730 @@
-// // app/screens/SearchScreen.tsx
-// import React, { useState } from 'react';
-// import {
-//   View,
-//   TextInput,
-//   FlatList,
-//   Image,
-//   Text,
-//   StyleSheet,
-//   TouchableOpacity,
-//   Keyboard,
-// } from 'react-native';
-
-// type Product = {
-//   id: string;
-//   name: string;
-//   price: number;
-//   imageUrl: string;
-//   keywords: string[];
-// };
-
-// const SearchScreen = ({ navigation }: any) => {
-//   const [searchQuery, setSearchQuery] = useState('');
-//   const [results, setResults] = useState<Product[]>([]);
-
-//   const handleSearch = async () => {
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <TextInput
-//         placeholder="Search for products or categories"
-//         value={searchQuery}
-//         onChangeText={text => setSearchQuery(text)}
-//         style={styles.input}
-//         returnKeyType="search"
-//         onSubmitEditing={handleSearch}
-//       />
-
-//       <FlatList
-//         data={results}
-//         keyExtractor={(item) => item.id}
-//         renderItem={({ item }) => (
-//           <TouchableOpacity
-//             style={styles.card}
-//             onPress={() => navigation.navigate('ProductDetails', { product: item })}
-//           >
-//             <Image source={{ uri: item.imageUrl }} style={styles.image} />
-//             <View>
-//               <Text style={styles.name}>{item.name}</Text>
-//               <Text style={styles.price}>₹{item.price}</Text>
-//             </View>
-//           </TouchableOpacity>
-//         )}
-//       />
-//     </View>
-//   );
-// };
-
-// export default SearchScreen;
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, padding: 16, backgroundColor: '#fff' },
-//   input: {
-//     borderWidth: 1,
-//     borderColor: '#ddd',
-//     padding: 12,
-//     borderRadius: 8,
-//     marginBottom: 16,
-//   },
-//   card: {
-
-//     marginBottom: 16,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//   },
-//   image: { width: 60, height: 60, marginRight: 12, borderRadius: 8 },
-//   name: { fontSize: 16, fontWeight: '600' },
-//   price: { fontSize: 14, color: '#555' },
-// });
-
-// app/screens/SearchScreen.tsx
-import React, {useState, useEffect} from 'react';
-import {
-  View,
-  TextInput,
-  FlatList,
-  Image,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { 
   ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Dimensions,
+  Animated,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/Feather';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import axiosInstance from '../../config/Api';
+import SearchOverlay from '../components/Search/SearchOverlay';
 
-type Product = {
-  id: string;
-  name: string;
+interface ProductSearchResult {
+  product_id: number;
+  title: string;
+  image: string | null;
   price: number;
-  imageUrl: string;
-  keywords: string[];
-  category: string;
-  searchCount?: number; // 👈 NEW
-};
+  store_name: string;
+}
 
-type Store = {
-  id: string;
+interface StoreSearchResult {
+  store_id: number;
   name: string;
-  logoUrl: string;
-  searchCount?: number; // 👈 NEW
+  logo_url: string;
+  city: string;
+}
+
+interface CategorySearchResult {
+  id: number;
+  name: string;
+  image: string | null;
+}
+
+interface FproductSearchResult {
+  id: number;
+  title: string;
+  image: string | null;
+  price: number;
+}
+
+interface RecentSearchItem {
+  id: number;
+  search_term: string;
+}
+
+const PLACEHOLDER_URI = 'https://via.placeholder.com/64';
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+const formatImageUrl = (url: string | null | undefined): string => {
+  if (!url) return PLACEHOLDER_URI;
+
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  try {
+    const base = axiosInstance?.defaults?.baseURL ?? '';
+    const u = new URL(base);
+    const origin = `${u.protocol}//${u.host}`;
+
+    if (url.startsWith('/')) {
+      return `${origin}${url}`;
+    }
+    return `${origin}/${url}`;
+  } catch {
+    return PLACEHOLDER_URI;
+  }
 };
 
-const DUMMY_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Apple iPhone 15',
-    price: 79999,
-    imageUrl: 'https://via.placeholder.com/100x100.png?text=iPhone+15',
-    keywords: ['apple', 'iphone', 'mobile', 'electronics'],
-    category: 'Mobiles',
-    searchCount: 1200,
-  },
-  {
-    id: '2',
-    name: 'Nike Running Shoes',
-    price: 4999,
-    imageUrl: 'https://via.placeholder.com/100x100.png?text=Nike+Shoes',
-    keywords: ['shoes', 'nike', 'sports', 'sneakers'],
-    category: 'Shoes',
-    searchCount: 980,
-  },
-  {
-    id: '3',
-    name: 'Adidas Hoodie',
-    price: 2499,
-    imageUrl: 'https://via.placeholder.com/100x100.png?text=Adidas+Hoodie',
-    keywords: ['hoodie', 'adidas', 'winterwear', 'clothing'],
-    category: 'Clothing',
-    searchCount: 750,
-  },
-  {
-    id: '4',
-    name: 'Sony Headphones',
-    price: 3999,
-    imageUrl: 'https://via.placeholder.com/100x100.png?text=Sony+Headphones',
-    keywords: ['headphones', 'sony', 'music', 'electronics'],
-    category: 'Electronics',
-    searchCount: 620,
-  },
-  {
-    id: '5',
-    name: 'Levi’s Jeans',
-    price: 2999,
-    imageUrl: 'https://via.placeholder.com/100x100.png?text=Levis+Jeans',
-    keywords: ['jeans', 'denim', 'levis', 'clothing'],
-    category: 'Clothing',
-    searchCount: 500,
-  },
-];
+const SearchScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const initialQuery: string = (route?.params?.q as string) || '';
+  const searchInputRef = useRef<TextInput>(null);
 
-const DUMMY_STORES: Store[] = [
-  {
-    id: '1',
-    name: 'Apple Store',
-    logoUrl: 'https://via.placeholder.com/50x50.png?text=Apple',
-    searchCount: 2000,
-  },
-  {
-    id: '2',
-    name: 'Nike Outlet',
-    logoUrl: 'https://via.placeholder.com/50x50.png?text=Nike',
-    searchCount: 1800,
-  },
-  {
-    id: '3',
-    name: 'Adidas Originals',
-    logoUrl: 'https://via.placeholder.com/50x50.png?text=Adidas',
-    searchCount: 1400,
-  },
-  {
-    id: '4',
-    name: 'Sony Center',
-    logoUrl: 'https://via.placeholder.com/50x50.png?text=Sony',
-    searchCount: 1100,
-  },
-];
+  const [searchInputValue, setSearchInputValue] = useState(initialQuery);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<{
+    stores: StoreSearchResult[];
+    products: ProductSearchResult[];
+    categories: CategorySearchResult[];
+    fproducts: FproductSearchResult[];
+  } | null>(null);
 
-const TRENDING_SEARCHES = [
-  'Men’s T-shirts',
-  'Sneakers',
-  'Apple iPhone 15',
-  'Adidas Hoodie',
-  'Sony Headphones',
-];
+  const [isOverlayVisible, setOverlayVisible] = useState(false);
+  const [overlayHeight] = useState(new Animated.Value(0));
+  
+  const [recentSearches, setRecentSearches] = useState<{
+    stores: RecentSearchItem[];
+    products: RecentSearchItem[];
+  }>({ stores: [], products: [] });
 
-const SearchScreen = ({navigation}: any) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState<(Product | Store)[]>([]);
-  const [suggestions, setSuggestions] = useState<(Product | Store)[]>([]);
-  const [recentProducts, setRecentProducts] = useState<Product[]>([]);
-  const [recentStores, setRecentStores] = useState<Store[]>([]);
-  const [loading, setLoading] = useState(false);
+  const hasResults = useMemo(() => {
+    if (!searchResults) return false;
+    const { stores, products, categories, fproducts } = searchResults;
+    return (
+      (stores && stores.length > 0) ||
+      (products && products.length > 0) ||
+      (categories && categories.length > 0) ||
+      (fproducts && fproducts.length > 0)
+    );
+  }, [searchResults]);
 
-  // Load dummy recents
+  // Fetch search results when the route query changes
   useEffect(() => {
-    setRecentProducts([DUMMY_PRODUCTS[0]]);
-    setRecentStores([DUMMY_STORES[1]]);
+    const executeSearch = async () => {
+      if (!initialQuery?.trim()) {
+        setSearchResults(null);
+        setIsSearching(false);
+        return;
+      }
+      setIsSearching(true);
+      setSearchResults(null);
+      try {
+        const [storesRes, productsRes, categoriesRes, fproductsRes] =
+          await Promise.all([
+            axiosInstance.get(
+              `/search/stores?query=${encodeURIComponent(initialQuery)}`
+            ),
+            axiosInstance.get(
+              `/search/products?query=${encodeURIComponent(initialQuery)}`
+            ),
+            axiosInstance.get(
+              `/search/categories?query=${encodeURIComponent(initialQuery)}`
+            ),
+            axiosInstance.get(
+              `/search/fproducts?query=${encodeURIComponent(initialQuery)}`
+            ),
+          ]);
+
+        const storesData = storesRes.data || {};
+        const productsData = productsRes.data || {};
+        const categoriesData = categoriesRes.data || {};
+        const fproductsData = fproductsRes.data || {};
+        console.log("stores Data",storesData);
+        console.log("prducts Data",productsData);
+        console.log("categoriesData Data",categoriesData);
+        console.log("fproductsData Data",fproductsData);
+        setSearchResults({
+          stores: storesData.stores || [],
+          products: productsData.products || [],
+          categories: categoriesData.categories || [],
+          fproducts: fproductsData.fproducts || [],
+        });
+      } catch (error) {
+        console.error('Search failed:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+    executeSearch();
+  }, [initialQuery]);
+
+  // Fetch recent searches on component mount
+  useEffect(() => {
+    const fetchRecentSearches = async () => {
+      try {
+        const [storesRes, productsRes] = await Promise.all([
+          axiosInstance.get(`/search/recentStores`),
+          axiosInstance.get(`/search/recentProducts`),
+        ]);
+        const storesData = storesRes.data || {};
+        const productsData = productsRes.data || {};
+        // console.log(storesData.data);
+        // console.log(productsData.data)
+        setRecentSearches({
+          stores: storesData.data || [],
+          products: productsData.data || [],
+        });
+      } catch (error) {
+        console.error('Failed to fetch recent searches:', error);
+      }
+    };
+    fetchRecentSearches();
   }, []);
 
-  const handleSearch = (query?: string) => {
-    const q = query || searchQuery;
-    if (!q.trim()) return;
-    setLoading(true);
+  // Animate overlay
+  useEffect(() => {
+    Animated.timing(overlayHeight, {
+      toValue: isOverlayVisible ? SCREEN_HEIGHT * 0.7 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [isOverlayVisible]);
 
+  const handleSearchSubmit = (term?: string) => {
+    const q = (term ?? searchInputValue).trim();
+    if (!q) return;
+    setSearchInputValue(q);
+    setOverlayVisible(false);
+    searchInputRef.current?.blur();
+    navigation.navigate('Search', { q });
+  };
+
+  const handleRecentSearchClick = (term: string) => {
+    setSearchInputValue(term);
+    setOverlayVisible(false);
+    searchInputRef.current?.blur();
+    navigation.navigate('Search', { q: term });
+  };
+
+  const handleSearchInputFocus = () => {
+    setOverlayVisible(true);
+  };
+
+  const handleSearchInputBlur = () => {
+    // Delay hiding overlay to allow for tap interactions
     setTimeout(() => {
-      const productMatches = DUMMY_PRODUCTS.filter(
-        p =>
-          p.name.toLowerCase().includes(q.toLowerCase()) ||
-          p.keywords.some(k => k.toLowerCase().includes(q.toLowerCase())),
-      );
-
-      const storeMatches = DUMMY_STORES.filter(s =>
-        s.name.toLowerCase().includes(q.toLowerCase()),
-      );
-
-      setResults([...productMatches, ...storeMatches]);
-
-      // 👇 Save to recent searches separately
-      if (productMatches.length > 0) {
-        setRecentProducts(prev => [
-          productMatches[0],
-          ...prev.filter(p => p.id !== productMatches[0].id),
-        ]);
-      }
-      if (storeMatches.length > 0) {
-        setRecentStores(prev => [
-          storeMatches[0],
-          ...prev.filter(s => s.id !== storeMatches[0].id),
-        ]);
-      }
-
-      setLoading(false);
-    }, 600);
+      setOverlayVisible(false);
+    }, 150);
   };
 
-  const handleTyping = (q: string) => {
-    setSearchQuery(q);
-    if (!q.trim()) {
-      setSuggestions([]);
-      return;
+  const handleOverlayItemSelect = (term: string) => {
+    handleRecentSearchClick(term);
+  };
+
+  const RecentSearchesView: React.FC = () => {
+    return (
+      <ScrollView style={styles.recentContainer} showsVerticalScrollIndicator={false}>
+        {/* Recently searched stores */}
+        {recentSearches.stores.length > 0 && (
+          <View style={styles.recentSection}>
+            <Text style={styles.recentSectionTitle}>
+              Recently searched stores
+            </Text>
+            <View style={styles.recentChipsContainer}>
+              {recentSearches.stores.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.recentChip}
+                  onPress={() => handleRecentSearchClick(item.search_term)}
+                >
+                  <Icon name="clock" size={16} color="#6b7280" />
+                  <Text style={styles.recentChipText}>
+                    {item.search_term}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Recently searched products */}
+        {recentSearches.products.length > 0 && (
+          <View style={styles.recentSection}>
+            <Text style={styles.recentSectionTitle}>
+              Recently searched products
+            </Text>
+            <View style={styles.recentChipsContainer}>
+              {recentSearches.products.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.recentChip}
+                  onPress={() => handleRecentSearchClick(item.search_term)}
+                >
+                  <Icon name="clock" size={16} color="#6b7280" />
+                  <Text style={styles.recentChipText}>
+                    {item.search_term}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Show message if no recent searches */}
+        {recentSearches.stores.length === 0 && recentSearches.products.length === 0 && (
+          <View style={styles.noRecentContainer}>
+            <Icon name="search" size={48} color="#d1d5db" />
+            <Text style={styles.noRecentText}>No recent searches</Text>
+            <Text style={styles.noRecentSubText}>
+              Start searching to see your recent searches here
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+    );
+  };
+
+  const SearchResultsView: React.FC = () => {
+    console.log("Entered int")
+    if (isSearching) {
+      return (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#ef4444" />
+        </View>
+      );
     }
-    const matches = [
-      ...DUMMY_PRODUCTS.filter(p =>
-        p.name.toLowerCase().includes(q.toLowerCase()),
-      ),
-      ...DUMMY_STORES.filter(s =>
-        s.name.toLowerCase().includes(q.toLowerCase()),
-      ),
-    ];
-    setSuggestions(matches.slice(0, 5));
-  };
 
-  const renderChips = (items: (Product | Store)[], isProduct: boolean) => (
-    <View style={styles.chipContainer}>
-      {items.map((item, idx) => (
-        <TouchableOpacity
-          key={idx}
-          style={styles.chip}
-          onPress={() => {
-            setSearchQuery(item.name);
-            handleSearch(item.name);
-          }}>
-          <Ionicons
-            name="time-outline"
-            size={14}
-            color="#333"
-            style={{marginRight: 4}}
-          />
-          <Text style={styles.chipText}>{item.name}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
+    if (!hasResults) {
+      return (
+        <View style={styles.noResultsContainer}>
+          <Text style={styles.noResultsText}>
+            No results found for "{initialQuery}"
+          </Text>
+          <Text style={styles.noResultsSubText}>
+            Please check the spelling or try different keywords.
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <ScrollView style={styles.resultsContainer} showsVerticalScrollIndicator={false}>
+        {/* Stores */}
+        {searchResults?.stores?.length > 0 && (
+          <View style={styles.resultSection}>
+            <Text style={styles.sectionTitle}>Stores</Text>
+            {searchResults.stores.map((store) => (
+              <TouchableOpacity key={store.store_id} style={styles.listItem}>
+                <Image
+                  source={{ uri: formatImageUrl(store.logo_url) }}
+                  style={styles.storeImage}
+                />
+                <View>
+                  <Text style={styles.boldText}>{store.name}</Text>
+                  <Text style={styles.subText}>{store.city}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* Categories */}
+        {searchResults?.categories?.length > 0 && (
+          <View style={styles.resultSection}>
+            <Text style={styles.sectionTitle}>Categories</Text>
+            {searchResults.categories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={styles.listItem}
+                onPress={() =>
+                  navigation.navigate('Products', {
+                    level: 3,
+                    ids: category.id,
+                  })
+                }
+              >
+                {category.image ? (
+                  <Image
+                    source={{ uri: formatImageUrl(category.image) }}
+                    style={styles.categoryImage}
+                  />
+                ) : (
+                  <View style={styles.placeholderImage}>
+                    <Text style={styles.placeholderText}>#</Text>
+                  </View>
+                )}
+                <Text style={styles.boldText}>{category.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* Products */}
+        {searchResults?.products?.length > 0 && (
+          <View style={styles.resultSection}>
+            <Text style={styles.sectionTitle}>Products</Text>
+            {searchResults.products.map((product) => (
+              <TouchableOpacity
+                key={product.product_id}
+                style={styles.listItem}
+                onPress={() =>
+                  navigation.navigate('ProductDetails', {
+                    id: product.product_id,
+                  })
+                }
+              >
+                <Image
+                  source={{ uri: formatImageUrl(product.image) }}
+                  style={styles.productImage}
+                />
+                <View style={styles.flexGrow}>
+                  <Text style={styles.boldText}>{product.title}</Text>
+                  <Text style={styles.subText}>{product.store_name}</Text>
+                  <Text style={styles.priceText}>${product.price}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* Featured Products */}
+        {searchResults?.fproducts?.length > 0 && (
+          <View style={styles.resultSection}>
+            <Text style={styles.sectionTitle}>Featured Products</Text>
+            {searchResults.fproducts.map((product) => (
+              <TouchableOpacity
+                key={product.id}
+                style={styles.listItem}
+                onPress={() =>
+                  navigation.navigate('ProductDetails', {
+                    id: product.id,
+                  })
+                }
+              >
+                <Image
+                  source={{ uri: formatImageUrl(product.image) }}
+                  style={styles.productImage}
+                />
+                <View style={styles.flexGrow}>
+                  <Text style={styles.boldText}>{product.title}</Text>
+                  <Text style={styles.priceText}>${product.price}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Select Delivery Location</Text>
-      </View>
-
-      {/* Search Bar */}
-      <View style={styles.searchBar}>
-        <Ionicons
-          name="search-outline"
-          size={20}
-          color="#888"
-          style={{marginHorizontal: 6}}
-        />
-        <TextInput
-          placeholder="Search for brands, products & more"
-          value={searchQuery}
-          onChangeText={handleTyping}
-          style={styles.input}
-          returnKeyType="search"
-          onSubmitEditing={() => handleSearch()}
-        />
-        <TouchableOpacity>
-          <Ionicons
-            name="camera-outline"
-            size={20}
-            color="#888"
-            style={{marginHorizontal: 6}}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Suggestions Dropdown */}
-      {searchQuery.length > 0 && suggestions.length > 0 && (
-        <View style={styles.suggestionBox}>
-          {suggestions.map((item, idx) => (
-            <TouchableOpacity
-              key={idx}
-              style={styles.suggestionItem}
-              onPress={() => handleSearch(item.name)}>
-              <Image
-                source={{
-                  uri: 'price' in item ? item.imageUrl : item.logoUrl,
-                }}
-                style={styles.suggestionImage}
-              />
-              <View style={styles.suggestionContent}>
-                <Text style={styles.suggestionName}>{item.name}</Text>
-                <Text style={styles.suggestionMeta}>
-                  {item.searchCount || Math.floor(Math.random() * 500)}
-                </Text>
-              </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.innerContainer}>
+        {/* Header with Search Bar */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Icon name="arrow-left" size={20} color="#374151" />
+          </TouchableOpacity>
+          
+          <View style={styles.searchInputContainer}>
+            <Icon name="search" size={18} color="#9CA3AF" style={styles.searchIcon} />
+            <TextInput
+              ref={searchInputRef}
+              style={styles.searchInput}
+              placeholder="Search stores, products, & more"
+              value={searchInputValue}
+              onChangeText={setSearchInputValue}
+              onFocus={handleSearchInputFocus}
+              onBlur={handleSearchInputBlur}
+              returnKeyType="search"
+              onSubmitEditing={() => handleSearchSubmit()}
+            />
+            <TouchableOpacity style={styles.cameraButton}>
+              <Icon name="camera" size={18} color="#9CA3AF" />
             </TouchableOpacity>
-          ))}
+          </View>
         </View>
-      )}
 
-      {/* Recently searched */}
-      <ScrollView style={{marginTop: 16}}>
-        {recentProducts.length > 0 && (
-          <View style={{marginBottom: 20}}>
-            <Text style={styles.sectionTitle}>Recently Searched Products</Text>
-            {renderChips(recentProducts, true)}
-          </View>
-        )}
+        {/* Main Content Area */}
+        <View style={styles.contentContainer}>
+          {/* Search Overlay - positioned below search bar */}
+          <Animated.View style={[styles.overlayContainer, { height: overlayHeight }]}>
+            {isOverlayVisible && (
+              <SearchOverlay
+                visible={isOverlayVisible}
+                searchQuery={searchInputValue}
+                onSearchSubmit={handleSearchSubmit}
+                onRecentSearchSelect={handleOverlayItemSelect}
+                onProductSelect={(productId) => {
+                  setOverlayVisible(false);
+                  console.log("Product ID:", productId);
+                  navigation.navigate('ProductDetails', { id: productId });
+                }}
+                onCategorySelect={(categoryId) => {
+                  setOverlayVisible(false);
+                  console.log("Category ID:", categoryId);
+                  navigation.navigate('ProductsScreen', { id: categoryId });
+                }}
+                onStoreSelect={(storeId) => {
+                  setOverlayVisible(false);
+                  console.log("Store ID:", storeId);
+                  navigation.navigate('StoreScreen' );
+                }}
+              />
+            )}
+          </Animated.View>
 
-        {recentStores.length > 0 && (
-          <View style={{marginBottom: 20}}>
-            <Text style={styles.sectionTitle}>Recently Searched Stores</Text>
-            {renderChips(recentStores, false)}
-          </View>
-        )}
-
-        <View>
-          <Text style={styles.sectionTitle}>Trending Searches</Text>
-          {renderChips(
-            TRENDING_SEARCHES.map((t, i) => ({
-              id: String(i),
-              name: t,
-              logoUrl: '',
-            })) as Store[],
-            false,
+          {/* Main Content - only visible when overlay is not shown */}
+          {!isOverlayVisible && (
+            <View style={styles.mainContent}>
+              {initialQuery?.trim() ? <SearchResultsView /> : <RecentSearchesView />}
+            </View>
           )}
         </View>
-      </ScrollView>
-
-      {/* Search Results */}
-      {loading ? (
-        <ActivityIndicator size="large" color="#000" style={{marginTop: 20}} />
-      ) : (
-        <FlatList
-          data={results}
-          keyExtractor={item => item.id}
-          renderItem={({item}) => {
-            if ('price' in item) {
-              // Product
-              return (
-                <TouchableOpacity
-                  style={styles.card}
-                  onPress={() =>
-                    navigation.navigate('ProductDetails', {product: item})
-                  }>
-                  <Image source={{uri: item.imageUrl}} style={styles.image} />
-                  <View>
-                    <Text style={styles.name}>{item.name}</Text>
-                    <Text style={styles.price}>₹{item.price}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            } else {
-              // Store
-              return (
-                <TouchableOpacity
-                  style={styles.card}
-                  onPress={() =>
-                    navigation.navigate('StoreDetails', {store: item})
-                  }>
-                  <Image source={{uri: item.logoUrl}} style={styles.image} />
-                  <View>
-                    <Text style={styles.name}>{item.name}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            }
-          }}
-        />
-      )}
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
 export default SearchScreen;
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#fff', padding: 12},
-  header: {flexDirection: 'row', alignItems: 'center', marginBottom: 10},
-  headerTitle: {fontSize: 16, fontWeight: 'bold', marginLeft: 12},
-  searchBar: {
-    height: 44,
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  innerContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#fff',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  backButton: {
+    padding: 4,
+    marginRight: 12,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
     borderRadius: 8,
-    paddingHorizontal: 10,
-    backgroundColor: '#EAEAEA',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  input: {flex: 1, padding: 8, fontSize: 14},
-  sectionTitle: {
-    fontWeight: '500',
-    marginBottom: 6,
-    fontSize: 14,
-    color: '#111',
+  searchIcon: {
+    marginRight: 8,
   },
-  chipContainer: {
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1F2937',
+    padding: 0,
+  },
+  cameraButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  contentContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  overlayContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    zIndex: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  mainContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  // Recent searches styles
+  recentContainer: {
+    flex: 1,
+  },
+  recentSection: {
+    marginBottom: 24,
+  },
+  recentSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#1f2937',
+  },
+  recentChipsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  chip: {
+  recentChip: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#A8A8A8',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    margin: 4,
+    borderColor: '#d1d5db',
+    borderRadius: 50,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  chipText: {fontSize: 13, color: '#000'},
-  card: {
+  recentChipText: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: '#374151',
+  },
+  noRecentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  noRecentText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginTop: 16,
+  },
+  noRecentSubText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    textAlign: 'center',
+    marginTop: 8,
+    paddingHorizontal: 40,
+  },
+  // Results styles
+  resultsContainer: {
+    flex: 1,
+  },
+  resultSection: {
+    marginBottom: 24,
+  },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  noResultsContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  noResultsText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  noResultsSubText: {
+    color: '#6b7280',
+    fontSize: 14,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 12,
+    color: '#1f2937',
+  },
+  listItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f7f0f0',
-    padding: 10,
-    marginVertical: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
     borderRadius: 8,
   },
-  image: {width: 60, height: 60, borderRadius: 6, marginRight: 12},
-  name: {fontSize: 14, fontWeight: '600'},
-  price: {fontSize: 12, color: '#555'},
-  suggestionBox: {
-    backgroundColor: '#fff',
+  storeImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 6,
-    marginTop: 4,
   },
-  suggestionItem: {
-    flexDirection: 'row',
+  categoryImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  placeholderImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
-
-  suggestionContent: {
-    flex: 1, // take remaining width
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between', // name left, count right
+  placeholderText: {
+    color: '#9ca3af',
+    fontSize: 18,
   },
-
-  suggestionName: {
+  productImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  flexGrow: {
+    flex: 1,
+  },
+  boldText: {
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#1f2937',
+  },
+  subText: {
     fontSize: 14,
-    color: '#111',
+    color: '#6b7280',
+    marginTop: 2,
   },
-
-  suggestionMeta: {
-    fontSize: 12,
-    color: '#666',
+  priceText: {
+    fontWeight: 'bold',
+    marginTop: 4,
+    fontSize: 15,
+    color: '#059669',
   },
-
-  suggestionImage: {width: 30, height: 30, marginRight: 10, borderRadius: 4},
-  // suggestionMeta: {fontSize: 12, color: '#666'},
 });

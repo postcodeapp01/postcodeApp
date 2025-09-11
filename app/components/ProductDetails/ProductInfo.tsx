@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {renderStars} from '../../common/renderStars';
+import {RenderStars} from '../../common/RenderStars';
 
 interface Product {
   brand: string;
@@ -22,7 +22,7 @@ const ProductInfo: React.FC<Props> = ({product}) => {
       <View style={styles.container}>
         <Text style={styles.brand}>{product.brand}</Text>
         <Text style={styles.name}>{product.name}</Text>
-          {renderStars(product.rating)}
+        {RenderStars(product.rating)}
         {/* <View style={styles.ratingContainer}>
         </View> */}
         <View style={styles.priceContainer}>

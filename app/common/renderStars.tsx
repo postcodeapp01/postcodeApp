@@ -2,7 +2,7 @@
 import { View } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
-export const renderStars = (rating: number) => {
+export const RenderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       if (rating >= i) {

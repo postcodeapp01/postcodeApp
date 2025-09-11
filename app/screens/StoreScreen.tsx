@@ -19,6 +19,7 @@ const StoreScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
+export default StoreScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -29,4 +30,3 @@ scrollView: {
   },
 });
 
-export default StoreScreen;

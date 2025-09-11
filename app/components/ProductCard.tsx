@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {RenderStars} from '../common/RenderStars';
 
 interface Product {
   id: string;
@@ -10,6 +11,7 @@ interface Product {
   originalPrice?: string;
   discount?: string;
   rating: string;
+  brand: string;
 }
 
 interface ProductCardProps {
@@ -18,20 +20,24 @@ interface ProductCardProps {
   onPress: () => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, isLeftColumn, onPress }) => {
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  isLeftColumn,
+  onPress,
+}) => {
   // console.log('ProductCard: ', product);
+  // console.log('Product', product);
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[
         styles.container,
-        isLeftColumn ? styles.leftCard : styles.rightCard
-      ]} 
-      onPress={onPress}
-    >
+        isLeftColumn ? styles.leftCard : styles.rightCard,
+      ]}
+      onPress={onPress}>
       {/* Product Image */}
       <View style={styles.imageContainer}>
         <Image
-          source={{uri:product.image}}
+          source={{uri: product.image}}
           style={styles.productImage}
           resizeMode="cover"
         />
@@ -43,10 +49,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isLeftColumn, onPres
 
       {/* Product Info */}
       <View style={styles.productInfo}>
+        <Text style={styles.brand}>{product.brand}</Text>
         <Text style={styles.productName} numberOfLines={2}>
           {product.name}
         </Text>
         
+        {RenderStars(product.rating)}
         {/* Price Row */}
         <View style={styles.priceRow}>
           <Text style={styles.price}>₹{product.price}</Text>
@@ -54,12 +62,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isLeftColumn, onPres
             <Text style={styles.originalPrice}>₹{product.originalPrice}</Text>
           )}
         </View>
-        
+
         {/* Rating */}
-        <View style={styles.ratingContainer}>
+        {/* <View style={styles.ratingContainer}>
           <Icon name="star" size={12} color="#FFD700" />
           <Text style={styles.ratingText}>{product.rating}</Text>
-        </View>
+        </View> */}
       </View>
     </TouchableOpacity>
   );
@@ -67,13 +75,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isLeftColumn, onPres
 
 const styles = StyleSheet.create({
   container: {
+    height: 245,
     backgroundColor: '#fff',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
     overflow: 'hidden',
   },
   leftCard: {
@@ -88,27 +91,35 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   productImage: {
-    width: '100%',
-    height: 180,
+    width: 172,
+    height: 160,
     backgroundColor: '#f5f5f5',
+    borderRadius: 10,
   },
   favoriteButton: {
     position: 'absolute',
-    top: 8,
+    bottom: 8,
     right: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 16,
     padding: 6,
   },
   productInfo: {
-    padding: 12,
+    height: 80,
   },
-  productName: {
+  brand: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
-    marginBottom: 6,
-    minHeight: 36,
+    color: '#000',
+    lineHeight: 15,
+    letterSpacing: -0.32,
+  },
+  productName: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#909090',
+    lineHeight: 15,
+    letterSpacing: -0.32,
   },
   priceRow: {
     flexDirection: 'row',

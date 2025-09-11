@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { domainUrl } from '../config/Api';
+import axiosInstance from '../config/Api';
 
 export interface Category {
   id: number;
@@ -27,8 +26,8 @@ export const fetchCategories = createAsyncThunk(
   'categories/fetchCategories',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get<Category[]>(`${domainUrl}/categories`); // update API endpoint
-      return res.data;
+    const res = await axiosInstance.get<Category[]>("/categories");  
+    return res.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch categories');
     }

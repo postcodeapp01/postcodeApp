@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/Ionicons'; // Install: npm install react-native-vector-icons
+import Icon from 'react-native-vector-icons/Ionicons'; 
 
 const StoreHeader: React.FC = () => {
   const navigation = useNavigation();
@@ -13,7 +13,7 @@ const StoreHeader: React.FC = () => {
         {/* Back Button */}
         <TouchableOpacity 
           style={styles.backButton} 
-          onPress={() => navigation.navigate('HomeScreen')}
+          onPress={() => navigation.goBack()}
         >
           <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>

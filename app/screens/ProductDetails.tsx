@@ -7,6 +7,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Text,
+  Alert,
 } from 'react-native';
 import ProductHeader from '../components/ProductDetails/ProductHeader';
 import ProductImageCarousel from '../components/ProductDetails/ProductImageCarousel';
@@ -18,8 +19,10 @@ import ProductDescription from '../components/ProductDetails/ProductDescription'
 import ReviewsComponent from '../components/ProductDetails/Reviews';
 import ProductActionFooter from '../components/ProductDetails/ProductActionFooter';
 import {useNavigation, useRoute} from '@react-navigation/native';
-import axios from 'axios';
-import {domainUrl} from '../../config/Api';
+import axiosInstance from '../../config/Api';
+import {HomeStackParamList} from '../../navigators/stacks/HomeStack';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import AddToCartModal from '../components/ProductDetails/AddToCartModal';
 
 interface Product {
   brand: string;
@@ -45,10 +48,11 @@ interface Product {
     images: string[];
   }[];
 }
+type NavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
 const ProductDetails: React.FC = () => {
   const route = useRoute();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const {id} = route.params as {id: string};
   const [selectedSize, setSelectedSize] = useState('M');
   const [selectedColor, setSelectedColor] = useState('Lime Green');
@@ -56,10 +60,25 @@ const ProductDetails: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  const [showSizeModal, setShowSizeModal] = useState(false);
+  const [tempSelectedSize, setTempSelectedSize] = useState<string | null>(null);
+
+  const dummySizeChart = [
+    {size: 'XS', bust: 34, waist: 32, hips: 38, length: 38, inseam: 30},
+    {size: 'S', bust: 36, waist: 34, hips: 40, length: 38, inseam: 40},
+    {size: 'M', bust: 38, waist: 36, hips: 42, length: 38, inseam: 42},
+    {size: 'L', bust: 40, waist: 38, hips: 44, length: 38, inseam: 44},
+    {size: 'XL', bust: 42, waist: 40, hips: 46, length: 38, inseam: 46},
+    {size: 'XXL', bust: 44, waist: 42, hips: 48, length: 38, inseam: 48},
+    {size: '3XL', bust: 46, waist: 44, hips: 50, length: 38, inseam: 50},
+  ];
+
   const fetchProductDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${domainUrl}/products/${id}`);
+      const response = await axiosInstance.get(`/products/${id}`);
       setProduct(response.data);
     } catch (error) {
       console.error('Error fetching product details:', error);
@@ -70,24 +89,74 @@ const ProductDetails: React.FC = () => {
 
   useEffect(() => {
     fetchProductDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleAddToCart = () => {
+  // const handleAddToCart = () => {
+  //   console.log('ck');
+  //   setShowSizeModal(true);
+  // };
+  const handleAddToCart = async () => {
     if (!product) return;
-    console.log('Added to Cart:', {
-      product: product.name,
-      size: selectedSize,
-      color: selectedColor,
-    });
+    // If product has sizes, open modal first
+    if (product.sizes && product.sizes.length > 0) {
+      setShowSizeModal(true);
+    } else {
+      // Directly add to cart if no size selection required
+      try {
+        await axiosInstance.post('/cart', {
+          productId: id,
+          qty: 1,
+          size: null, // no size for this product
+        });
+        Alert.alert('Added to cart!');
+      } catch (err) {
+        console.error('❌ Failed to add to cart', err);
+        Alert.alert('Failed to add to cart');
+      }
+    }
   };
 
-  const handleBuyNow = () => {
+  const confirmAddToCart = async () => {
+    if (!tempSelectedSize) {
+      Alert.alert('Please select a size');
+      return;
+    }
     if (!product) return;
-    console.log('Buying Now:', {
-      product: product.name,
-      size: selectedSize,
-      color: selectedColor,
-    });
+    try {
+      await axiosInstance.post('/cart', {
+        productId: (product as any)._id || id,
+        size: tempSelectedSize,
+        qty: 1,
+        colorId: 1,
+      });
+      Alert.alert('Added to cart!');
+      setSelectedSize(tempSelectedSize);
+      setShowSizeModal(false);
+    } catch (err) {
+      console.error('Failed to add to cart', err);
+      Alert.alert('Failed to add to cart');
+    }
+  };
+  const handleWishlistToggle = async () => {
+    try {
+      if (isWishlisted) {
+        // remove
+        await axiosInstance.delete(`/wishlist/${id}`);
+        setIsWishlisted(false);
+      } else {
+        // add
+        await axiosInstance.post(`/wishlist/`, {
+          productId: id,
+        });
+        setIsWishlisted(true);
+      }
+    } catch (error) {
+      console.error('Wishlist toggle error', error);
+    }
+  };
+  const handleBuyNow = () => {
+    navigation.navigate('BuyNowScreen', {id} as never);
   };
 
   if (loading) {
@@ -118,37 +187,36 @@ const ProductDetails: React.FC = () => {
       <StatusBar barStyle="light-content" />
       <View style={{flex: 1}}>
         <ProductHeader
-        title="Max Fashion"
-        onBack={() => {
-          console.log("🔙 Back pressed in ProductDetails");
-          console.log("canGoBack:", navigation.canGoBack());
-
-          try {
-            if (navigation.canGoBack()) {
-              navigation.goBack();
-            } else {
-              console.log("⚠️ No back stack → navigating to HomeScreen");
-              navigation.navigate("HomeScreen" as never);
+          title="Max Fashion"
+          onBack={() => {
+            try {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('HomeScreen' as never);
+              }
+            } catch (err) {
+              console.error('❌ Error on back:', err);
             }
-          } catch (err) {
-            console.error("❌ Error on back:", err);
-          }
-        }}
-      />
+          }}
+        />
 
+        {/* Important: removeClippedSubviews={false} prevents native pre-removal during pop transitions */}
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom: 100}}>
-          <ProductImageCarousel images={product.images||[]} />
+          contentContainerStyle={{paddingBottom: 100}}
+          removeClippedSubviews={false}
+          keyboardShouldPersistTaps="handled">
+          <ProductImageCarousel images={product.images || []} />
           <ProductInfo product={product} />
           <SizeSelector
-            sizes={product.sizes||[]}
+            sizes={product.sizes || []}
             selectedSize={selectedSize}
             onSelectSize={setSelectedSize}
             sizeDetails={product.sizeDetails}
           />
           <ColorSelector
-            colors={product.colors||[]}
+            colors={product.colors || []}
             selectedColor={selectedColor}
             onSelectColor={setSelectedColor}
           />
@@ -156,19 +224,34 @@ const ProductDetails: React.FC = () => {
           {activeTab === 'details' && (
             <ProductDescription
               title={product.name}
-              description={product.description||""}
-              details={product.details||[]}
+              description={product.description || ''}
+              details={product.details || []}
             />
           )}
           {activeTab === 'reviews' && (
-            <ReviewsComponent reviews={product.reviewsData||[]} />
+            // ReviewsComponent now renders plain Views (no FlatList) to avoid nested virtualization
+            <ReviewsComponent reviews={product.reviewsData || []} />
           )}
         </ScrollView>
+
         <ProductActionFooter
           price={product.price}
           onAddToCart={handleAddToCart}
           onBuyNow={handleBuyNow}
-          onWishlistToggle={() => {}}
+          onWishlistToggle={handleWishlistToggle}
+        />
+
+        <AddToCartModal
+          visible={showSizeModal}
+          sizes={product.sizes || []}
+          selectedSize={tempSelectedSize}
+          onSelectSize={setTempSelectedSize}
+          onConfirm={confirmAddToCart}
+          onClose={() => setShowSizeModal(false)}
+          sizeChart={
+            dummySizeChart /* array of SizeRow objects from backend (cm) */
+          }
+          guideImage={require('../../sources/images/measure.png')}
         />
       </View>
     </SafeAreaView>

@@ -4,17 +4,21 @@ import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FiltersModal from '../FiltersModal';
 import SortModal from '../SortModal';
+import CategoryModal from '../CategoryModal';
 
 type ProductFilterBarProps = {
   onSort: (option: string) => void;
   onFilter: (filters: Record<string, string[]>) => void; // ✅ callback to parent
 };
 
-const ProductFilterBar: React.FC<ProductFilterBarProps> = ({onSort, onFilter}) => {
+const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
+  onSort,
+  onFilter,
+}) => {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [sortVisible, setSortVisible] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string | null>(null);
-
+  const [categoryVisible, setCategoryVisible] = useState(false);
   return (
     <View>
       {/* Top Bar */}
@@ -30,7 +34,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({onSort, onFilter}) =
 
         <View style={styles.divider} />
 
-        <TouchableOpacity style={styles.item}>
+        <TouchableOpacity style={styles.item} onPress={() => setCategoryVisible(true)}>
           <Text style={[styles.text, styles.bold]}>Category</Text>
         </TouchableOpacity>
 
@@ -56,6 +60,15 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({onSort, onFilter}) =
           }
         }}
       />
+      <CategoryModal
+        visible={categoryVisible}
+        onClose={() => setCategoryVisible(false)}
+        onApply={selectedCategories => {
+          setCategoryVisible(false);
+          console.log("Category  modal",selectedCategories);
+          onFilter(selectedCategories); // send filters to parent
+        }}
+      />
 
       {/* ✅ Filters Modal */}
       <FiltersModal
@@ -72,7 +85,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({onSort, onFilter}) =
 };
 
 export default ProductFilterBar;
-
 
 const styles = StyleSheet.create({
   container: {
@@ -109,5 +121,3 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
 });
-
-

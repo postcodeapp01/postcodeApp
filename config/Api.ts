@@ -1,8 +1,9 @@
 import axios from "axios";
 import { store } from "../Store";
 import { getItemFromAsyncStorage, setItemInAsyncStorage } from "../app/common/utils/asyncStorage/AsyncStorageUtils";
-export const domainUrl = 'http://10.0.2.2:3000'
+// export const domainUrl = 'http://10.0.2.2:3000'
 // export const domainUrl = 'http://localhost:3000'
+export const domainUrl = 'http://10.45.178.27:3000'
 
 export const Api = {
     sendOtp: `${domainUrl}/user/auth/initiate`,
@@ -22,6 +23,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const state = store.getState();
     const token = state.user.accessToken;
+    // console.log("first token", token);
     if (token && !config.headers?.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }

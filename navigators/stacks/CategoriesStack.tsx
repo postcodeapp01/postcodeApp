@@ -7,7 +7,7 @@ const Stack = createNativeStackNavigator();
 export default function CategoriesStack() {
   return (
     <Stack.Navigator >
-      <Stack.Screen name="Show by categories" component={Categories} />
+      <Stack.Screen name="Categories" component={Categories} />
     </Stack.Navigator>
   );
 }

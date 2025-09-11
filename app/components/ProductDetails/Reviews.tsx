@@ -1,14 +1,14 @@
-import React from 'react';
+import React, {memo} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Image,
-  FlatList,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
+import { RenderStars } from '../../common/RenderStars';
 
-import {renderStars} from '../../common/renderStars';
 
 interface Review {
   id: string;
@@ -24,55 +24,83 @@ interface Props {
   reviews: Review[];
 }
 
+/**
+ * Renders reviews as plain Views (no FlatList) so they can be safely hosted
+ * inside a parent ScrollView without causing Fabric child-removal issues.
+ */
 const ReviewsComponent: React.FC<Props> = ({reviews}) => {
-  const renderReview = ({item}: {item: Review}) => (
-    <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <Image source={{uri: item.avatar}} style={styles.avatar} />
-        <View style={{flex: 1}}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.date}>{item.date}</Text>
-          {renderStars(item.rating)}
-          {/* <View style={styles.starsContainer}>{renderStars(item.rating)}</View> */}
-        </View>
+  if (!reviews || reviews.length === 0) {
+    return (
+      <View style={styles.emptyWrapper}>
+        <Text style={styles.emptyText}>No reviews yet.</Text>
       </View>
-      <Text style={styles.text}>{item.text}</Text>
-      <View style={styles.imageRow}>
-        {item.images.map((img, index) => (
-          <TouchableOpacity key={index} activeOpacity={0.7}>
-            <Image source={{uri: img}} style={styles.reviewImage} />
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
+    );
+  }
 
   return (
-    <FlatList
-      data={reviews}
-      keyExtractor={item => item.id}
-      renderItem={renderReview}
-      contentContainerStyle={{padding: 12}}
-    />
+    <View style={styles.container}>
+      {reviews.map(item => (
+        <View key={String(item.id)} style={styles.card}>
+          <View style={styles.headerRow}>
+            <Image source={{uri: item.avatar}} style={styles.avatar} />
+            <View style={{flex: 1}}>
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.date}>{item.date}</Text>
+              {RenderStars(item.rating)}
+            </View>
+          </View>
+
+          <Text style={styles.text}>{item.text}</Text>
+
+          {item.images && item.images.length > 0 && (
+            <View style={styles.imageRow}>
+              {item.images.map((img, index) => (
+                <TouchableOpacity
+                  key={`${item.id}-${index}`}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    /* optional: open image viewer */
+                  }}>
+                  <Image source={{uri: img}} style={styles.reviewImage} />
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      ))}
+    </View>
   );
 };
 
-export default ReviewsComponent;
+export default memo(ReviewsComponent);
 
 const styles = StyleSheet.create({
+  container: {
+    padding: 12,
+  },
+  emptyWrapper: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: '#666',
+  },
   card: {
     padding: 10,
     marginBottom: 14,
+    backgroundColor: 'transparent',
   },
   headerRow: {
     flexDirection: 'row',
     marginBottom: 4,
+    alignItems: 'center',
   },
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 50,
     marginRight: 8,
+    backgroundColor: '#eee',
   },
   name: {
     fontWeight: '600',
@@ -85,7 +113,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 13,
     color: '#444',
-    marginVertical: 4,
+    marginVertical: 8,
     lineHeight: 18,
   },
   imageRow: {
@@ -93,14 +121,10 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   reviewImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    marginRight: 6,
+    width: 64,
+    height: 64,
+    borderRadius: 6,
+    marginRight: 8,
     backgroundColor: '#eee',
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    marginVertical: 4,
   },
 });

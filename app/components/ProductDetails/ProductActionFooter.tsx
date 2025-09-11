@@ -1,11 +1,10 @@
 // ProductActionFooter.tsx
 import React from 'react';
-import {View, TouchableOpacity, Text, StyleSheet} from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface ProductActionFooterProps {
-  price: number;
   onWishlistToggle: () => void;
   onBuyNow: () => void;
   onAddToCart: () => void;
@@ -32,7 +31,8 @@ const ProductActionFooter: React.FC<ProductActionFooterProps> = ({
       <TouchableOpacity
         style={styles.iconBtn}
         onPress={onWishlistToggle}
-        activeOpacity={0.7}>
+        activeOpacity={0.7}
+      >
         <FontAwesome
           name={isWishlisted ? 'heart' : 'heart-o'}
           size={20}
@@ -45,8 +45,9 @@ const ProductActionFooter: React.FC<ProductActionFooterProps> = ({
         style={[styles.actionBtn, styles.buyNowBtn]}
         onPress={onBuyNow}
         disabled={buyDisabled || isBuyLoading}
-        activeOpacity={0.8}>
-        <MaterialCommunityIcons name="cash" size={16} color="#fff" />
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons name="tag-outline" size={18} color="#fff" />
         <Text style={styles.buyNowText}>Buy now</Text>
       </TouchableOpacity>
 
@@ -55,8 +56,9 @@ const ProductActionFooter: React.FC<ProductActionFooterProps> = ({
         style={[styles.actionBtn, styles.addToCartBtn]}
         onPress={onAddToCart}
         disabled={cartDisabled || isCartLoading}
-        activeOpacity={0.8}>
-        <MaterialCommunityIcons name="cart-plus" size={16} color="#FF5964" />
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons name="shopping-outline" size={18} color="#FFF" />
         <Text style={styles.addToCartText}>Add to cart</Text>
       </TouchableOpacity>
     </View>
@@ -65,22 +67,13 @@ const ProductActionFooter: React.FC<ProductActionFooterProps> = ({
 
 const styles = StyleSheet.create({
   footer: {
+    height: 60,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: '#FF5964',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    height: 56,
-    shadowColor: '#FF5964',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    justifyContent: 'space-between',
   },
   iconBtn: {
     width: 40,
@@ -88,34 +81,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'transparent',
   },
   actionBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 36,
-    borderRadius: 18,
+    height: 35,
+    borderRadius: 10,
+    borderWidth: 2,
     marginHorizontal: 6,
   },
   buyNowBtn: {
     backgroundColor: 'transparent',
-    borderWidth: 1.5,
     borderColor: '#fff',
   },
   addToCartBtn: {
-    backgroundColor: '#fff',
+    backgroundColor:'transparent',
+    borderColor: '#fff',
   },
   buyNowText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 14,
     marginLeft: 6,
   },
   addToCartText: {
-    color: '#FF5964',
-    fontWeight: '600',
+    color: '#FFF',
+    fontWeight: '700',
     fontSize: 14,
     marginLeft: 6,
   },

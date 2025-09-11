@@ -11,14 +11,14 @@ import {
 import {useRoute, useNavigation} from '@react-navigation/native';
 import type {RouteProp} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import ProductCard from '../components/Store/ProductCard';
+import ProductCard from '../components/ProductCard';
 import ProductsHeader from '../components/Products/ProductsHeader';
 
 import {HomeStackParamList} from '../../navigators/stacks/HomeStack';
-import {domainUrl} from '../../config/Api';
+import axiosInstance from '../../config/Api';
 
 import ProductFilterBar from '../components/Products/ProductFilterBar';
-import axios from 'axios';
+
 import {RootState} from '../../Store';
 import {useSelector} from 'react-redux';
 
@@ -47,7 +47,7 @@ const ProductsScreen: React.FC = () => {
   const route = useRoute<ProductsScreenRouteProp>();
   const navigation = useNavigation<ProductsScreenNavigationProp>();
   const {id: initialId} = route.params;
-
+  console.log("Products Screen",initialId)
   const categories = useSelector(
     (state: RootState) => state.categories.categories,
   );
@@ -142,8 +142,8 @@ const ProductsScreen: React.FC = () => {
     setLoading(true);
     try {
       const query = buildQueryParams();
-      const response = await axios.get(
-        `${domainUrl}/products/level/${selectedCategoryId}?${query}`,
+      const response = await axiosInstance.get(
+        `/products/level/${selectedCategoryId}?${query}`,
       );
 
       // console.log('✅ API Response:', response.data);
@@ -161,7 +161,7 @@ const ProductsScreen: React.FC = () => {
       product={item}
       isLeftColumn={index % 2 === 0}
       onPress={() => {
-        navigation.navigate('ProductDetails', {id: item.id,resetStack:true});
+        navigation.navigate('ProductDetails', {id: item.id, resetStack: true});
       }}
     />
   );
@@ -196,7 +196,7 @@ const ProductsScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ProductsHeader
         title="Products"
-        onBack={() => navigation.navigate('HomeScreen')}
+        onBack={() => navigation.goBack()}
         productCount={products?.length}
       />
 

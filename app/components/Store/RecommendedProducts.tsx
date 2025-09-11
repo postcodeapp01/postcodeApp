@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import ProductCard from './ProductCard';
-import { recommendedProducts } from './productData';
+import {View, Text, StyleSheet, FlatList} from 'react-native';
+import ProductCard from '../ProductCard';
+import {recommendedProducts} from './productData';
 
 const RecommendedProducts: React.FC = () => {
-  const renderProduct = ({ item, index }: { item: any; index: number }) => (
-    <ProductCard 
-      product={item} 
+  const renderProduct = ({item, index}: {item: any; index: number}) => (
+    <ProductCard
+      product={item}
       isLeftColumn={index % 2 === 0}
       onPress={() => console.log(`Selected product: ${item.name}`)}
     />
@@ -22,7 +22,8 @@ const RecommendedProducts: React.FC = () => {
         scrollEnabled={false}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.productGrid}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
+        removeClippedSubviews={false}
       />
     </View>
   );

@@ -51,9 +51,10 @@ export default function Categories() {
             </TouchableOpacity>
         ))
     }
-
+    
     return (
         <View style={CategoriesStyles.mainContainer}>
+            <Text>Offers will be implemented soon</Text>
             {renderCategories()}
         </View>
     )
