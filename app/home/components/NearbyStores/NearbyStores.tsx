@@ -18,52 +18,52 @@ import {RootState} from '../../../../Store';
 export const NearbyStores: React.FC = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<any>();
-  const[nearByStores,setNearByStores]=useState([]);
+  const [nearByStores, setNearByStores] = useState<any[]>([]);
   const {stores, loading} = useSelector((state: RootState) => state.storeData);
   useEffect(() => {
-  if (stores.length > 0) {
-    const filterNearbyStores = async () => {
-      const granted = await requestLocationPermission();
-      if (!granted) {
-        Alert.alert(
-          'Permission Denied',
-          'Cannot fetch nearby stores without location access.',
+    if (stores.length > 0) {
+      const filterNearbyStores = async () => {
+        const granted = await requestLocationPermission();
+        if (!granted) {
+          Alert.alert(
+            'Permission Denied',
+            'Cannot fetch nearby stores without location access.',
+          );
+          return;
+        }
+
+        Geolocation.getCurrentPosition(
+          position => {
+            try {
+              const {latitude, longitude} = position.coords;
+
+              const nearbyStores = stores
+                .map((store: any) => {
+                  const distance = (
+                    calculateDistance(store, latitude, longitude) / 1000
+                  ).toFixed(2);
+                  return {...store, distance};
+                })
+                .filter((store: any) => Number(store.distance) < 10);
+
+              // console.log("✅ nearbyStores:", nearbyStores[0]);
+              setNearByStores(nearbyStores);
+            } catch (err) {
+              console.error(err);
+              Alert.alert('Error', 'Failed to filter nearby stores.');
+            }
+          },
+          error => {
+            console.error(error);
+            Alert.alert('Location Error', 'Unable to get your location.');
+          },
+          {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
         );
-        return;
-      }
+      };
 
-      Geolocation.getCurrentPosition(
-        position => {
-          try {
-            const {latitude, longitude} = position.coords;
-
-            const nearbyStores = stores
-              .map((store: any) => {
-                const distance = (
-                  calculateDistance(store, latitude, longitude) / 1000
-                ).toFixed(2);
-                return {...store, distance};
-              })
-              .filter((store: any) => Number(store.distance) < 10);
-
-            // console.log("✅ nearbyStores:", nearbyStores[0]);
-            setNearByStores(nearbyStores);
-          } catch (err) {
-            console.error(err);
-            Alert.alert('Error', 'Failed to filter nearby stores.');
-          }
-        },
-        error => {
-          console.error(error);
-          Alert.alert('Location Error', 'Unable to get your location.');
-        },
-        {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-      );
-    };
-
-    filterNearbyStores();
-  }
-}, [stores]);
+      filterNearbyStores();
+    }
+  }, [stores]);
 
   if (loading) {
     return (
@@ -71,9 +71,9 @@ export const NearbyStores: React.FC = () => {
     );
   }
 
-  if (stores.length === 0) {
+  if (nearByStores.length === 0) {
     return (
-      <View style={styles.container}>
+      <View style={styles.emptyContainer}>
         <Text style={styles.title}>Nearby Stores</Text>
         <Text style={{textAlign: 'center', color: '#555'}}>
           No stores found within 10 km.
@@ -86,10 +86,10 @@ export const NearbyStores: React.FC = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Nearby Stores</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {nearByStores.map(store => (
+        {nearByStores.map((store: any) => (
           <StoreCard
             key={store.id}
-            store={{...store, logo: {uri: store.logo}}}
+            store={{...(store || {}), logo: {uri: store.logo}}}
             onPress={() => {
               navigation.navigate('StoreScreen', {storeId: store.id});
             }}
@@ -102,8 +102,11 @@ export const NearbyStores: React.FC = () => {
 export default NearbyStores;
 
 const styles = StyleSheet.create({
+  emptyContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
   container: {
-    marginTop: 10,
     height: 140,
     // backgroundColor: '#721515ff',
     paddingHorizontal: 16,

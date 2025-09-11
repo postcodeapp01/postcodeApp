@@ -55,33 +55,39 @@ export default function useAddresses(): UseAddressesReturn {
     fetchAddresses();
   }, [fetchAddresses]);
 
-  const markDefault = useCallback(async (id: string) => {
-    // optimistic update: set selected to default, others false
-    const prev = addresses;
-    setAddresses(prev.map(a => ({...a, isDefault: a.id === id})));
-    try {
-      await axiosInstance.patch(`/address/${id}`, {isDefault: 1});
-      // optionally refetch to reconcile server state:
-      // await fetchAddresses();
-    } catch (err) {
-      console.error('markDefault failed', err);
-      // revert
-      setAddresses(prev);
-      throw err;
-    }
-  }, [addresses]);
+  const markDefault = useCallback(
+    async (id: string) => {
+      // optimistic update: set selected to default, others false
+      const prev = addresses;
+      setAddresses(prev.map(a => ({...a, isDefault: a.id === id})));
+      try {
+        await axiosInstance.patch(`/address/${id}`, {isDefault: 1});
+        // optionally refetch to reconcile server state:
+        // await fetchAddresses();
+      } catch (err) {
+        console.error('markDefault failed', err);
+        // revert
+        setAddresses(prev);
+        throw err;
+      }
+    },
+    [addresses],
+  );
 
-  const deleteAddress = useCallback(async (id: string) => {
-    const prev = addresses;
-    setAddresses(prev.filter(a => a.id !== id)); // optimistic removal
-    try {
-      await axiosInstance.delete(`/address/${id}`);
-    } catch (err) {
-      console.error('deleteAddress failed', err);
-      setAddresses(prev); // revert on failure
-      throw err;
-    }
-  }, [addresses]);
+  const deleteAddress = useCallback(
+    async (id: string) => {
+      const prev = addresses;
+      setAddresses(prev.filter(a => a.id !== id)); // optimistic removal
+      try {
+        await axiosInstance.delete(`/address/${id}`);
+      } catch (err) {
+        console.error('deleteAddress failed', err);
+        setAddresses(prev); // revert on failure
+        throw err;
+      }
+    },
+    [addresses],
+  );
 
   const upsertAddress = useCallback((addr: TAddress) => {
     setAddresses(prev => {

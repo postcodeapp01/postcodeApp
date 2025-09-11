@@ -159,177 +159,6 @@
 
 
 
-// src/components/PickByCategory/PickByCategory.tsx
-// import React, {useState, useMemo} from 'react';
-// import {
-//   View,
-//   Text,
-//   TouchableOpacity,
-//   StyleSheet,
-//   ScrollView,
-//   Image,
-// } from 'react-native';
-// import {useSelector} from 'react-redux';
-// import {RootState} from '../../../../Store';
-// import {HomeStackParamList} from '../../../../navigators/stacks/HomeStack';
-// import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-// import {useNavigation} from '@react-navigation/native';
-
-
-// type NavigationProp = NativeStackNavigationProp<HomeStackParamList>;
-// type Category = {
-//   id: number;
-//   title: string;
-//   imageUrl: string;
-//   parent_id: number;
-//   level: number;
-// };
-
-// export default function PickByCategory({onCategoryPress}: any) {
-//   // Get all categories from Redux
-//   const {categories} = useSelector((state: RootState) => state.categories);
-//   const navigation = useNavigation<NavigationProp>();
-//   // console.log('categories data', categories[0]);
-//   // Filter only level-1 (top) categories
-//   const topCategories = useMemo(
-//     () => categories.filter((c: any) => c.level === 1),
-//     [categories],
-//   );
-//   const allCategory = {id: -1, name: 'All', image: 'https://res.cloudinary.com/dy6bwdhet/image/upload/v1756704897/Rectangle_5379_fvvvlu.png', parent_id: 0, level: 0};
-//   const displayCategories = [allCategory, ...topCategories];
-//   // Track which top-category is selected
-//   const [activeParentId, setActiveParentId] = useState<number>(
-//     allCategory.id,
-//   );
-
-//   // Compute second-level children of the active parent
-//   const subCategories = useMemo(
-//     () =>
-//       categories.filter(
-//         (c: any) => c.parent_id === activeParentId && c.level === 2,
-//       ),
-//     [categories, activeParentId],
-//   );
-
-//   return (
-//     <View style={styles.container}>
-//       {/* Top-level categories */}
-//       <ScrollView
-//         horizontal
-//         showsHorizontalScrollIndicator={false}
-//         contentContainerStyle={styles.scrollRow}>
-//         {displayCategories.map((cat: any) => (
-//           <TouchableOpacity
-//             key={cat.id}
-//             style={[
-//               styles.topItem,
-//               activeParentId === cat.id && styles.topItemActive,
-//             ]}
-//             onPress={() => {
-//               onCategoryPress(cat.id);
-//               setActiveParentId(cat.id);
-//             }}>
-//             <Image source={{uri: cat.image}} style={styles.topImage} />
-//             <Text
-//               style={[
-//                 styles.topText,
-//                 activeParentId === cat.id && styles.topTextActive,
-//               ]}>
-//               {cat.name}
-//             </Text>
-//             {activeParentId === cat.id && <View style={styles.underline} />}
-//           </TouchableOpacity>
-//         ))}
-//       </ScrollView>
-      
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     marginTop: -5,
-    
-//   },
-//   scrollRow: {
-    
-//     paddingHorizontal: 10,
-//     height: 95,
-//     width: '100%',
-//     display: 'flex',
-//     alignItems: 'center',
-//   },
-//   secondscrollRow: {
-//     // backgroundColor: '#0cf53fff',
-//     width: '100%',
-//     height: 110,
-//     left: 10,
-//   },
-//   topItem: {
-//     width: 65,
-//     alignItems: 'center',
-//     marginRight: 16,
-//     // backgroundColor: '#0cf53fff',
-//     paddingBottom: 4,
-//   },
-//   topItemActive: {},
-//   topImage: {
-//     width: 60,
-//     height: 40,
-//     borderRadius: 8,
-//   },
-//   topText: {
-//     marginTop: 6,
-//     fontSize: 12,
-//     color: '#444',
-//     textAlign: 'center',
-//   },
-//   topTextActive: {
-//     color: '#FF4D4D',
-//     fontWeight: '600',
-//   },
-//   underline: {
-//     position: 'absolute',
-//     bottom: 0,
-//     height: 2,
-//     width: 79.45 * 0.6,
-//     backgroundColor: '#FF4D4D',
-//     borderRadius: 1,
-//   },
-
-//   subItem: {
-//     marginRight: 12,
-//     alignItems: 'center',
-//     height: 111,
-//   },
-//   imageWrapper: {
-//     position: 'relative',
-//     width: 72,
-//     height: 100,
-//     // borderRadius: 10,
-//     borderTopEndRadius: 10,
-//     borderTopStartRadius: 10,
-//     overflow: 'hidden',
-//   },
-//   subImage: {
-//     width: 72,
-//     height: 100,
-//     resizeMode: 'cover',
-//   },
-//   overlay: {
-//     ...StyleSheet.absoluteFillObject, // fills entire image
-//     justifyContent: 'flex-end',
-//     alignItems: 'center',
-//   },
-//   subText: {
-//     color: '#fff',
-//     fontWeight: 'bold',
-//     width: '100%',
-//     fontSize: 10,
-//     textAlign: 'center',
-//     backgroundColor: '#9747FF',
-//   },
-// });
 import React, {useMemo, useState} from 'react';
 import {
   View,
@@ -488,21 +317,19 @@ export default function PickByCategory({onCategoryPress}: any) {
 const styles = StyleSheet.create({
   container: {
     marginTop: 10,
-    marginBottom:-10,
+    marginBottom:-20,
   },
   row: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start', // items laid out left-to-right inside the padded container
+    justifyContent: 'flex-start', 
     height:60,
-    backgroundColor:"#e48989ff",
   },
   topItem: {
     alignItems: 'center',
-    backgroundColor:"#44d644ff",
-    paddingBottom: 4,
-    position: 'relative', // needed for absolute underline positioning
+    paddingBottom: 10,
+    position: 'relative', 
   },
   topImage: {
     resizeMode: 'cover',
@@ -518,10 +345,10 @@ const styles = StyleSheet.create({
   },
   underline: {
     position: 'absolute',
+    bottom:100,
     height: 2,
     backgroundColor: '#FF4D4D',
     borderRadius: 1,
-    bottom:10,
   },
 });
 
