@@ -1,0 +1,280 @@
+{
+  "info": {
+    "name": "Postcode Backend (Vercel Combined API)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "7a9c2f6d-2df6-4f8a-9e3f-3b2a2c9a1234"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://backend-five-zeta-75.vercel.app" },
+    { "key": "accessToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Auth - Initiate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user?action=auth/initiate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user"],
+              "query": [{ "key": "action", "value": "auth/initiate" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+12345678901\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Auth - Verify",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user?action=auth/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user"],
+              "query": [{ "key": "action", "value": "auth/verify" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+12345678901\",\n  \"code\": \"123456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Session - Refresh",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user?action=auth/session/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user"],
+              "query": [{ "key": "action", "value": "auth/session/refresh" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"<refresh-token>\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Session - Close",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user?action=auth/session/close",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user"],
+              "query": [{ "key": "action", "value": "auth/session/close" }]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user?action=profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user"],
+              "query": [{ "key": "action", "value": "profile" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Address",
+      "item": [
+        {
+          "name": "Create Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/address",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "address"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"line1\": \"123 Main St\",\n  \"line2\": \"Apt 4B\",\n  \"city\": \"Springfield\",\n  \"state\": \"IL\",\n  \"postal_code\": \"62704\",\n  \"country\": \"US\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/address",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "address"]
+            }
+          }
+        },
+        {
+          "name": "Update Address (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/address?id={{addressId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "address"],
+              "query": [{ "key": "id", "value": "{{addressId}}" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"line1\": \"456 New St\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/address?id={{addressId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "address"],
+              "query": [{ "key": "id", "value": "{{addressId}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search?type=products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search"],
+              "query": [{ "key": "type", "value": "products" }]
+            }
+          }
+        },
+        {
+          "name": "Search Stores",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search?type=stores",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search"],
+              "query": [{ "key": "type", "value": "stores" }]
+            }
+          }
+        },
+        {
+          "name": "Recent Products (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search?type=recentProducts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search"],
+              "query": [{ "key": "type", "value": "recentProducts" }]
+            }
+          }
+        },
+        {
+          "name": "Recent Products (DELETE one by title)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search?type=recentProducts&productTitle={{productTitle}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search"],
+              "query": [
+                { "key": "type", "value": "recentProducts" },
+                { "key": "productTitle", "value": "{{productTitle}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Recent Stores (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search?type=recentStores",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search"],
+              "query": [{ "key": "type", "value": "recentStores" }]
+            }
+          }
+        },
+        {
+          "name": "Recent Stores (DELETE one by name)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search?type=recentStores&storeName={{storeName}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search"],
+              "query": [
+                { "key": "type", "value": "recentStores" },
+                { "key": "storeName", "value": "{{storeName}}" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

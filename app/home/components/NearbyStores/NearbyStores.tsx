@@ -7,64 +7,45 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import Geolocation from 'react-native-geolocation-service';
 import StoreCard from './StoreCard';
-import {requestLocationPermission} from '../../../common/permissions/location';
+
 import {calculateDistance} from '../../../common/utils/distanceCalculator';
 import {useNavigation} from '@react-navigation/native';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {RootState} from '../../../../Store';
 
 export const NearbyStores: React.FC = () => {
-  const dispatch = useDispatch();
   const navigation = useNavigation<any>();
   const [nearByStores, setNearByStores] = useState<any[]>([]);
   const {stores, loading} = useSelector((state: RootState) => state.storeData);
+  const userLocation=useSelector((state:RootState)=>state.user.userDetails.location);
+  // console.log("locaion deatils",userLocation);
   useEffect(() => {
-    if (stores.length > 0) {
-      const filterNearbyStores = async () => {
-        const granted = await requestLocationPermission();
-        if (!granted) {
-          Alert.alert(
-            'Permission Denied',
-            'Cannot fetch nearby stores without location access.',
-          );
-          return;
-        }
+    if (stores.length > 0 && userLocation) {
+      try {
+        const { lat, lng } = userLocation;
 
-        Geolocation.getCurrentPosition(
-          position => {
-            try {
-              const {latitude, longitude} = position.coords;
+        const nearbyStores = stores
+          .map((store: any) => {
+            const distance = (
+              calculateDistance(
+                parseFloat(store.latitude),
+                parseFloat(store.longitude),
+                lat,
+                lng
+              ) / 1000
+            ).toFixed(2);
+            return { ...store, distance };
+          })
+          .filter((store: any) => Number(store.distance) < 10);
 
-              const nearbyStores = stores
-                .map((store: any) => {
-                  const distance = (
-                    calculateDistance(store, latitude, longitude) / 1000
-                  ).toFixed(2);
-                  return {...store, distance};
-                })
-                .filter((store: any) => Number(store.distance) < 10);
-
-              // console.log("✅ nearbyStores:", nearbyStores[0]);
-              setNearByStores(nearbyStores);
-            } catch (err) {
-              console.error(err);
-              Alert.alert('Error', 'Failed to filter nearby stores.');
-            }
-          },
-          error => {
-            console.error(error);
-            Alert.alert('Location Error', 'Unable to get your location.');
-          },
-          {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-        );
-      };
-
-      filterNearbyStores();
+        setNearByStores(nearbyStores);
+      } catch (err) {
+        console.error(err);
+        Alert.alert('Error', 'Failed to filter nearby stores.');
+      }
     }
-  }, [stores]);
-
+  }, [stores, userLocation]);
   if (loading) {
     return (
       <ActivityIndicator size="large" color="#7A00E6" style={{marginTop: 20}} />

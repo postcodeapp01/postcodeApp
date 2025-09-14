@@ -1,18 +1,10 @@
-type Store = {
-  id: string | number;
-  name: string;
-  logo: string;
-  distance: number;
-  longitude:string;
-  latitude:string;
-  // add other properties as needed
-};
-export const calculateDistance = (store: Store,lat: number,lng: number) => {
+
+export const calculateDistance = (lat: number,lng: number,ulat: number,ulng: number) => {
     const R = 6371e3; // metres
-    const userLatitude = lat;
-    const userLongitude = lng;
-    const storeLatitude = parseFloat(store.latitude);
-    const storeLongitude = parseFloat(store.longitude);
+    const userLatitude = ulat;
+    const userLongitude = ulng;
+    const storeLatitude = lat;
+    const storeLongitude = lng;
 
     const φ1 = (userLatitude * Math.PI) / 180;
     const φ2 = (storeLatitude * Math.PI) / 180;

@@ -1,6 +1,7 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {RootState} from '../Store';
 import axiosInstance from '../config/Api';
+import { calculateDistance } from '../app/common/utils/distanceCalculator';
 
 // ---------- Types ----------
 export type Address = {
@@ -25,6 +26,7 @@ type AddressesState = {
   refreshing: boolean;
   markingDefault: boolean; // Add this for better UX
   error: string | null;
+   nearestAutoSelected: boolean;
 };
 
 const initialState: AddressesState = {
@@ -33,6 +35,7 @@ const initialState: AddressesState = {
   refreshing: false,
   markingDefault: false, // Add this
   error: null,
+  nearestAutoSelected: false,
 };
 
 // ---------- Helpers ----------
@@ -53,19 +56,73 @@ const normalizeAddress = (addr: any): Address => ({
 });
 
 // ---------- Async thunks ----------
-export const fetchAddresses = createAsyncThunk<Address[]>(
-  'addresses/fetchAll',
-  async (_, {rejectWithValue}) => {
-    try {
-      const {data} = await axiosInstance.get('/address');
-      return (data.address ?? []).map(normalizeAddress);
-    } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || 'Failed to load addresses',
-      );
+// export const fetchAddresses = createAsyncThunk<Address[]>(
+//   'addresses/fetchAll',
+//   async (_, {rejectWithValue}) => {
+//     try {
+//       const {data} = await axiosInstance.get('/address');
+//       return (data.address ?? []).map(normalizeAddress);
+//     } catch (err: any) {
+//       return rejectWithValue(
+//         err.response?.data?.message || 'Failed to load addresses',
+//       );
+//     }
+//   },
+// );
+export const fetchAddresses = createAsyncThunk<
+  Address[],
+  void,
+  { state: RootState; dispatch: any }
+>('addresses/fetchAll', async (_, { getState, dispatch, rejectWithValue }) => {
+  try {
+    const { data } = await axiosInstance.get('/address');
+    let addresses: Address[] = (data.address ?? []).map(normalizeAddress);
+
+    const state = getState();
+    const userLocation = state.user.userDetails.location;
+    const alreadyAutoSelected = state.addresses.nearestAutoSelected;
+
+    if (userLocation && addresses.length > 0 && !alreadyAutoSelected) {
+      let nearest: Address | null = null;
+      let nearestDistance = Infinity;
+
+      addresses.forEach(addr => {
+        if (addr.lat && addr.lng) {
+          const distance = calculateDistance(
+            addr.lat,
+            addr.lng,
+            userLocation.lat,
+            userLocation.lng
+          );
+
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = addr;
+          }
+        }
+      });
+
+      if (nearest) {
+        addresses = addresses.map(addr => ({
+          ...addr,
+          isDefault: addr.id === nearest?.id,
+        }));
+
+        // ✅ Mark nearest as default in backend
+        dispatch(markDefault(nearest.id));
+        // ✅ Mark that we have already auto-selected once
+        dispatch(setNearestAutoSelected(true));
+      }
     }
-  },
-);
+
+    return addresses;
+  } catch (err: any) {
+    return rejectWithValue(
+      err.response?.data?.message || 'Failed to load addresses'
+    );
+  }
+});
+
 
 export const addAddress = createAsyncThunk<Address, Omit<Address, 'id'>>(
   'addresses/add',
@@ -141,6 +198,9 @@ const addressesSlice = createSlice({
         state.items.push(action.payload);
       }
     },
+    setNearestAutoSelected: (state, action: PayloadAction<boolean>) => {
+    state.nearestAutoSelected = action.payload;
+  }
   },
   extraReducers: builder => {
     // fetchAddresses
@@ -228,5 +288,5 @@ export const selectAddressesRefreshing = (state: RootState) =>
 export const selectMarkingDefault = (state: RootState) =>
   state.addresses.markingDefault;
 
-export const {upsertAddress} = addressesSlice.actions;
+export const {upsertAddress,setNearestAutoSelected } = addressesSlice.actions;
 export default addressesSlice.reducer;

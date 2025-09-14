@@ -19,9 +19,6 @@ import {Address as TAddress} from '../../userProfile/components/Address/address'
 import {
   fetchAddresses,
   selectAddresses,
-  selectAddressesLoading,
-  selectAddressesRefreshing,
-  selectMarkingDefault,
 } from '../../../reduxSlices/addressesSlice';
 
 const {height: WINDOW_HEIGHT} = Dimensions.get('window');
@@ -32,9 +29,6 @@ const LocationSelector: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const addresses = useSelector(selectAddresses);
-  // const loading = useSelector(selectAddressesLoading);
-  // const refreshing = useSelector(selectAddressesRefreshing);
-  // const markingDefault = useSelector(selectMarkingDefault);
 
   const defaultAddress = useMemo(
     () => addresses.find(a => a.isDefault) ?? null,

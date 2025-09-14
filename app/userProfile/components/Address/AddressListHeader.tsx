@@ -59,7 +59,7 @@ const AddressListHeader: React.FC<Props> = ({
       {/* Default Address Section */}
       {displayAddresses.default && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Default Address</Text>
+          {/* <Text style={styles.sectionTitle}>Default Address</Text> */}
           <AddressCard
             address={displayAddresses.default}
             isDefault
@@ -67,7 +67,7 @@ const AddressListHeader: React.FC<Props> = ({
             onDelete={onDelete}
             showMarkDefault={false}
           />
-          <Text style={styles.sectionTitle2}>All addresses</Text>
+          {/* <Text style={styles.sectionTitle2}>All addresses</Text> */}
         </View>
       )}
 
@@ -82,6 +82,7 @@ export default AddressListHeader;
 
 const styles = StyleSheet.create({
   section: {
+    // backgroundColor:"#6c3636ff",
     marginTop: 8,
   },
   sectionTitle: {

@@ -8,11 +8,21 @@ import {
   FlatList,
   Alert,
   InteractionManager,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import WishlistProductCard from '../components/Wishlist/WishlistProductCard';
 import axiosInstance from '../../../config/Api';
 import AddToCartModal from '../../components/ProductDetails/AddToCartModal';
+
+
+const screenWidth = Dimensions.get('window').width;
+const H_PADDING = 16; // screen horizontal padding
+const GAP = 12;
+const NUM_COLUMNS = 2;
+
+const CARD_WIDTH =
+  (screenWidth - H_PADDING * 2 - GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
 type WishlistProduct = {
   id: string;
   name: string;
@@ -110,7 +120,8 @@ const WishlistScreen: React.FC<Props> = ({navigation}) => {
       onRemove={() => handleRemoveFromWishlist(item.id)}
       onAddToCart={() => handleAddToCart(item)}
       onPress={() => handleProductPress(item)}
-      isLeftColumn={index % 2 === 0}
+      // isLeftColumn={index % 2 === 0}
+      width={CARD_WIDTH}
     />
   );
 
@@ -152,13 +163,11 @@ const WishlistScreen: React.FC<Props> = ({navigation}) => {
           data={wishlistItems}
           renderItem={renderWishlistItem}
           keyExtractor={item => item.id}
-          numColumns={2}
+          numColumns={NUM_COLUMNS}
           contentContainerStyle={styles.listContent}
           columnWrapperStyle={styles.row}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews={false}
-          initialNumToRender={6}
-          windowSize={5}
         />
       ) : (
         renderEmptyWishlist()
@@ -235,14 +244,12 @@ const styles = StyleSheet.create({
 
   // List
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal:H_PADDING,
     paddingTop: 8,
     paddingBottom: 24,
   },
   row: {
     justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    marginBottom: 16,
   },
   itemSeparator: {
     height: 16,

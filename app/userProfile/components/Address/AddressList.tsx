@@ -2,8 +2,6 @@ import React, {useCallback, useEffect, useState, useMemo, useRef} from 'react';
 import {View, Alert, FlatList, StyleSheet} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import AddressCard from './AddressCard';
-import Geolocation from '@react-native-community/geolocation';
-import {requestLocationPermission} from '../../../common/permissions/location';
 import {
   fetchAddresses,
   addAddress,
@@ -14,15 +12,14 @@ import {
   selectAddressesLoading,
   selectMarkingDefault,
 } from '../../../../reduxSlices/addressesSlice';
-import {getAddressFromCoords} from '../../../common/utils/getAddressFromCoords';
 import AddressListHeader from './AddressListHeader';
 import {Address} from './address';
 import AddAddressButton from './AddAddressButton';
-import {AppDispatch} from '../../../../Store';
+import {AppDispatch, RootState} from '../../../../Store';
+import axiosInstance from '../../../../config/Api';
 
 type Props = {
   navigation: any;
-  // new props for modal usage
   onAddressPress?: (addr: Address) => void;
   onStartAdd?: () => void;
   onStartEdit?: () => void;
@@ -41,20 +38,26 @@ const AddressList: React.FC<Props> = ({
   const addresses = useSelector(selectAddresses);
   const loading = useSelector(selectAddressesLoading);
   const markingDefault = useSelector(selectMarkingDefault);
-
+  const userLocation = useSelector(
+    (state: RootState) => state.user.userDetails.location,
+  );
+  console.log("in the address list logging user location",userLocation)
   // parent-controlled searchQuery (AddressSearchBar is expected to debounce internally)
   const [searchQuery, setSearchQuery] = useState('');
 
   // suggestions overlay states
-  const [suggestions, setSuggestions] = useState<Array<{id: string; text: string}>>(
-    [],
-  );
+  const [suggestions, setSuggestions] = useState<
+    Array<{id: string; text: string}>
+  >([]);
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
-
-  // id selected from suggestion to trigger scroll
-  const [selectedSuggestionId, setSelectedSuggestionId] = useState<string | null>(
-    null,
+  const sessionTokenRef = useRef<string>(() =>
+    Math.random().toString(36).slice(2),
   );
+  const acDebounceRef = useRef<number | null>(null);
+
+  const [selectedSuggestionId, setSelectedSuggestionId] = useState<
+    string | null
+  >(null);
 
   // flatlist ref for scrolling
   const flatListRef = useRef<FlatList<any> | null>(null);
@@ -106,7 +109,10 @@ const AddressList: React.FC<Props> = ({
 
                 // 4) If the address was originally default but update made it non-default,
                 //    re-assert it via markDefault (some backends require a separate call).
-                if (Boolean(addr.isDefault) && !Boolean(updatedItem.isDefault)) {
+                if (
+                  Boolean(addr.isDefault) &&
+                  !Boolean(updatedItem.isDefault)
+                ) {
                   try {
                     await dispatch(markDefault(payload.id)).unwrap();
                   } catch (markErr) {
@@ -126,7 +132,10 @@ const AddressList: React.FC<Props> = ({
                 Alert.alert('Success', 'Address updated.');
               } catch (error) {
                 console.error('Update address error:', error);
-                Alert.alert('Error', 'Could not update address. Please try again.');
+                Alert.alert(
+                  'Error',
+                  'Could not update address. Please try again.',
+                );
               }
             },
           });
@@ -165,7 +174,10 @@ const AddressList: React.FC<Props> = ({
               Alert.alert('Success', 'Address updated.');
             } catch (error) {
               console.error('Update address error:', error);
-              Alert.alert('Error', 'Could not update address. Please try again.');
+              Alert.alert(
+                'Error',
+                'Could not update address. Please try again.',
+              );
             }
           },
         });
@@ -278,133 +290,119 @@ const AddressList: React.FC<Props> = ({
     [navigation, dispatch, onStartAdd],
   );
 
-  // New: when user taps "Use My Location" in this screen
   const handleUseMyLocationPress = useCallback(async () => {
-    const hasPerm = await requestLocationPermission();
-    if (!hasPerm) {
-      Alert.alert('Permission Denied', 'Location permission is required');
-      return;
+    try {
+      const {lat,lng} = userLocation;
+      // console.log("lat and lon in reverse coding",lat,lng);
+      const address = await axiosInstance.post('/googlemaps/reverse-geocode', {
+        lat,
+        lng,
+      });
+      // console.log("address from reverse geo coding",address.data)
+      if (address) {
+        handleLocationSelected(address.data);
+      } else {
+        Alert.alert('Error', 'Unable to fetch address from current location');
+      }
+    } catch (err) {
+      console.error('Reverse geocode error:', err);
+      Alert.alert('Error', 'Failed to fetch address. Please try again.');
     }
-
-    Geolocation.getCurrentPosition(
-      async position => {
-        const {latitude, longitude} = position.coords;
-        try {
-          const address = await getAddressFromCoords(latitude, longitude);
-          if (address) {
-            // pass the reverse-geocoded address to AddAddressScreen
-            handleLocationSelected(address);
-          } else {
-            Alert.alert('Error', 'Unable to fetch address from current location');
-          }
-        } catch (err) {
-          console.error('Reverse geocode error:', err);
-          Alert.alert('Error', 'Failed to fetch address. Please try again.');
-        }
-      },
-      error => {
-        console.error('Geolocation error:', error);
-        Alert.alert('Error', 'Failed to get location. Please try again.');
-      },
-      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-    );
   }, [handleLocationSelected]);
 
-  // Parent receives search updates from AddressSearchBar (which should debounce internally).
-  // Important: do NOT debounce here.
   const handleSearchChange = useCallback((query: string) => {
     setSearchQuery(query);
   }, []);
 
-  // build suggestion text
-  const buildSuggestionText = useCallback((a: Address) => {
-    const parts = [a.name, a.label, a.addressLine1, a.city, a.pincode].filter(
-      Boolean,
-    );
-    return parts.join(', ');
-  }, []);
+  
 
-  // compute suggestions (no parent debounce; AddressSearchBar already debounces)
+ 
+
+  // fetch suggestions when searchQuery changes (debounced)
   useEffect(() => {
-    const q = searchQuery?.toLowerCase().trim() ?? '';
-
-    if (!q) {
+    if (!searchQuery || searchQuery.trim().length < 2) {
       setSuggestions([]);
       setSuggestionsVisible(false);
       return;
     }
-
-    const out: Array<{id: string; text: string}> = [];
-    for (const a of addresses) {
-      const searchable = [
-        a.name,
-        a.label,
-        a.addressLine1,
-        a.addressLine2,
-        a.city,
-        a.state,
-        a.country,
-        a.pincode,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-
-      if (searchable.includes(q)) {
-        out.push({id: a.id, text: buildSuggestionText(a)});
-      }
-      if (out.length >= 6) break;
-    }
-
-    // show overlay even if no matches — we'll show "No matches found"
-    setSuggestions(out);
-    setSuggestionsVisible(true);
-  }, [searchQuery, addresses, buildSuggestionText]);
-
-  // user presses a suggestion
-  const onSuggestionPress = useCallback((s: {id: string; text: string}) => {
-    // close overlay and clear search input
-    setSuggestions([]);
-    setSuggestionsVisible(false);
-
-    // set the selected id so the effect scrolls the list
-    setSelectedSuggestionId(s.id);
-
-    // clear search input in parent so overlay doesn't reappear; AddressSearchBar will receive this via prop
-    setSearchQuery('');
-  }, []);
-
-  // scroll to selected suggestion id once displayAddresses is ready
-  useEffect(() => {
-    if (!selectedSuggestionId) return;
-
-    // find index in the "others" list (FlatList renders others)
-    const idx = displayAddresses.others.findIndex(
-      a => a.id === selectedSuggestionId,
-    );
-
-    // schedule a tick for UI to settle then scroll
-    setTimeout(() => {
+    if (acDebounceRef.current) clearTimeout(acDebounceRef.current);
+    acDebounceRef.current = window.setTimeout(async () => {
       try {
-        if (idx >= 0) {
-          flatListRef.current?.scrollToIndex({
-            index: idx,
-            animated: true,
-            viewPosition: 0.2,
-          });
-        } else {
-          // possibly the default address — scroll to top so header is visible
-          flatListRef.current?.scrollToOffset({offset: 0, animated: true});
-        }
+        const location = userLocation
+          ? {lat: userLocation.latitude, lng: userLocation.longitude}
+          : undefined;
+        const resp = await axiosInstance.post('/googlemaps/autocomplete', {
+          input: searchQuery.trim(),
+          sessionToken: sessionTokenRef.current,
+          location,
+          // optionally: radius: 50000, components: 'country:in'
+        });
+
+        const preds = resp.data?.predictions || [];
+        console.log("Autocomplete",preds)
+        const mapped = preds.map((p: any) => ({
+          id: p.id || p.place_id,
+          text: p.text || p.description,
+        }));
+        setSuggestions(mapped);
+        setSuggestionsVisible(true);
       } catch (err) {
-        // scrollToIndex may fail if measurement not ready; fallback to top
-        console.warn('scrollToIndex failed, fallback to top', err);
-        flatListRef.current?.scrollToOffset({offset: 0, animated: true});
-      } finally {
-        setSelectedSuggestionId(null);
+        console.error('autocomplete fetch failed', err);
+        setSuggestions([]); 
+        setSuggestionsVisible(false);
       }
-    }, 0);
-  }, [displayAddresses, selectedSuggestionId]);
+    }, 300); 
+    return () => {
+      if (acDebounceRef.current) {
+        clearTimeout(acDebounceRef.current);
+      }
+    };
+  }, [searchQuery, userLocation]);
+
+  
+  const onSuggestionPress = useCallback(
+    async (s: {id: string; text: string}) => {
+      try {
+        setSuggestionsVisible(false);
+        setSearchQuery(s.text); // show chosen text in searchbar (optional)
+
+        const resp = await axiosInstance.post('/googlemaps/place-details', {
+          placeId: s.id,
+          sessionToken: sessionTokenRef.current,
+        });
+
+        const data = resp.data;
+        if (!data) {
+          Alert.alert('Error', 'Failed to fetch place details');
+          return;
+        }
+
+        // Build partial Address object expected by handleLocationSelected
+        const locationData: Partial<Address> = {
+          name: data.name || undefined,
+          addressLine1: data.addressLine1 || data.formattedAddress || '',
+          addressLine2: data.addressLine2 || '',
+          city: data.city || '',
+          state: data.state || '',
+          country: data.country || '',
+          pincode: data.pincode || '',
+          lat: data.lat,
+          lng: data.lng,
+        };
+
+        // send to the existing flow
+        handleLocationSelected(locationData);
+      } catch (err) {
+        console.error('place-details error', err);
+        Alert.alert('Error', 'Unable to fetch place details. Try again.');
+      } finally {
+        // new search session next time
+        sessionTokenRef.current = Math.random().toString(36).slice(2);
+      }
+    },
+    [handleLocationSelected],
+  );
+
 
   return (
     <View style={styles.wrapper}>
@@ -421,7 +419,6 @@ const AddressList: React.FC<Props> = ({
             onDelete={confirmDelete}
             onMarkDefault={handleMarkDefault}
             isMarkingDefault={markingDefault}
-            // pass onAddressPress if provided (this allows parent modal to close and receive the address)
             onPress={onAddressPress ? () => onAddressPress(item) : undefined}
           />
         )}

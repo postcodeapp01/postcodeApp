@@ -47,11 +47,12 @@ const ProductsScreen: React.FC = () => {
   const route = useRoute<ProductsScreenRouteProp>();
   const navigation = useNavigation<ProductsScreenNavigationProp>();
   const {id: initialId} = route.params;
-  console.log("Products Screen",initialId)
+
   const categories = useSelector(
     (state: RootState) => state.categories.categories,
   );
-
+  const pageCategory = categories.filter(c => c.id === Number(initialId));
+  const pageTitle = pageCategory ? pageCategory[0].name : 'Products';
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -195,7 +196,7 @@ const ProductsScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ProductsHeader
-        title="Products"
+        title={pageTitle}
         onBack={() => navigation.goBack()}
         productCount={products?.length}
       />
