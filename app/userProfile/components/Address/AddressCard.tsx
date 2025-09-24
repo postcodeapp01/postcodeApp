@@ -1,182 +1,35 @@
-// import React, {memo, useCallback} from 'react';
-// import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-
-// import {Address} from './address';
-
-// type Props = {
-//   address: Address;
-//   isDefault?: boolean;
-//   onEdit?: (a: Address) => void;
-//   onDelete?: (id: string) => void;
-//   onMarkDefault?: (id: string) => void;
-//   showMarkDefault?: boolean;
-// };
-
-// const AddressCard: React.FC<Props> = ({
-//   address,
-//   isDefault,
-//   onEdit,
-//   onDelete,
-//   onMarkDefault,
-//   showMarkDefault = true,
-// }) => {
-//   const handleEdit = useCallback(() => onEdit?.(address), [onEdit, address]);
-//   const handleDelete = useCallback(
-//     () => onDelete?.(address.id),
-//     [onDelete, address.id],
-//   );
-//   const handleMarkDefault = useCallback(
-//     () => onMarkDefault?.(address.id),
-//     [onMarkDefault, address.id],
-//   );
-
-//   return (
-//     <View style={styles.card}>
-//       <Text style={styles.name}>{address.name}</Text>
-
-//       <Text style={styles.addressText}>
-//         {address.addressLine1}
-//         {address.addressLine2 ? `, ${address.addressLine2}` : ''},{' '}
-//         {address.city}, {address.state}.
-//       </Text>
-
-//       {/* <Text style={styles.addressText}>
-//         sai milk bar, {address.city}, {address.state}.
-//       </Text> */}
-
-//       <Text style={styles.phoneText}>
-//         Phone: {address.phone || '9876543210'}
-//       </Text>
-
-//       <View style={styles.actions}>
-//         <TouchableOpacity
-//           onPress={handleDelete}
-//           accessibilityLabel={`Delete ${address.label || address.name}`}
-//           style={styles.actionBtn}>
-//           <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
-//         </TouchableOpacity>
-
-//         <View style={styles.separator} />
-
-//         <TouchableOpacity
-//           onPress={handleEdit}
-//           accessibilityLabel={`Edit ${address.label || address.name}`}
-//           style={styles.actionBtn}>
-//           <Text style={styles.actionText}>Edit</Text>
-//         </TouchableOpacity>
-
-//         {showMarkDefault && !isDefault && (
-//           <>
-//             <View style={styles.separator} />
-//             <TouchableOpacity
-//               onPress={handleMarkDefault}
-//               accessibilityLabel={`Mark ${
-//                 address.label || address.name
-//               } default`}
-//               style={styles.actionBtn}>
-//               <Text style={styles.actionText}>Mark default</Text>
-//             </TouchableOpacity>
-//           </>
-//         )}
-//       </View>
-//     </View>
-//   );
-// };
-
-// export default memo(AddressCard);
-
-// const styles = StyleSheet.create({
-//   card: {
-//     backgroundColor: '#fff',
-//     borderRadius: 12,
-//     padding: 16,
-//     marginHorizontal: 16,
-//     marginBottom: 16,
-//     elevation: 2,
-//     shadowColor: '#000',
-//     shadowOpacity: 0.1,
-//     shadowOffset: {width: 0, height: 2},
-//     shadowRadius: 4,
-//   },
-//   name: {
-//     fontSize: 16,
-//     fontWeight: '600',
-//     color: '#000000',
-//     marginBottom: 8,
-//   },
-//   addressText: {
-//     fontSize: 14,
-//     color: '#666666',
-//     lineHeight: 20,
-//     marginBottom: 4,
-//   },
-//   phoneText: {
-//     fontSize: 14,
-//     color: '#666666',
-//     marginBottom: 16,
-//   },
-//   actions: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//   },
-//   actionBtn: {
-//     paddingVertical: 4,
-//     paddingHorizontal: 2,
-//   },
-//   actionText: {
-//     fontSize: 14,
-//     fontWeight: '500',
-//     color: '#000',
-//   },
-//   deleteText: {
-//     color: '#FF3B30',
-//   },
-//   separator: {
-//     width: 1,
-//     height: 16,
-//     backgroundColor: '#000',
-//     marginHorizontal: 12,
-//   },
-// });
 import React, {memo, useCallback} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {Address} from './address';
 
 type Props = {
   address: Address;
-  isDefault?: boolean;
+  isSelected?: boolean;
   onEdit?: (a: Address) => void;
   onDelete?: (id: string) => void;
-  onMarkDefault?: (id: string) => void;
+  onPress?: (a: Address) => void; 
 };
 
 const AddressCard: React.FC<Props> = ({
   address,
-  isDefault,
+  isSelected,
   onEdit,
   onDelete,
-  onMarkDefault,
+  onPress,
 }) => {
   const handleEdit = useCallback(() => onEdit?.(address), [onEdit, address]);
   const handleDelete = useCallback(
     () => onDelete?.(address.id),
     [onDelete, address.id],
   );
-  const handleMarkDefault = useCallback(
-    () => onMarkDefault?.(address.id),
-    [onMarkDefault, address.id],
-  );
+  const handlePress = useCallback(() => onPress?.(address), [onPress, address]);
 
   return (
     <TouchableOpacity
-      style={[styles.card, isDefault && styles.defaultCard]}
+      style={[styles.card, isSelected && styles.selectedCard]} // highlight selected
       activeOpacity={0.8}
-      onPress={handleMarkDefault}
-    >
-      <Text style={styles.name}>
-        {address.name}
-        {/* {isDefault && <Text style={styles.defaultTag}> (Default)</Text>} */}
-      </Text>
+      onPress={handlePress}>
+      <Text style={styles.name}>{address.name}</Text>
 
       <Text style={styles.addressText}>
         {address.addressLine1}
@@ -219,10 +72,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: '#ddd', // default border
+    borderColor: '#ddd',
   },
-  defaultCard: {
-    borderColor: 'green',
+  selectedCard: {
+    borderColor: 'green', // ✅ highlight border green
     borderWidth: 2,
   },
   name: {
@@ -230,11 +83,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000000',
     marginBottom: 8,
-  },
-  defaultTag: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: 'green',
   },
   addressText: {
     fontSize: 14,

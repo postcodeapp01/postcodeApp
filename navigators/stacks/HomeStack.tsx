@@ -14,6 +14,7 @@ import MoreScreen from '../../app/screens/MoreScreen';
 import WishlistScreen from '../../app/userProfile/screens/WishlistScreen';
 import AddAddressScreen from '../../app/userProfile/screens/AddAddressScreen';
 import NotificationsScreen from '../../app/screens/NotifictionsScreen';
+import PaymentSuccessScreen from '../../app/components/Cart/PaymentSuccessPage';
 
 
 export type HomeStackParamList = {
@@ -32,6 +33,7 @@ export type HomeStackParamList = {
   MoreScreen: undefined;
   WishlistScreen: undefined;
   NotificationsScreen: undefined;
+  PaymentSuccessScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -118,6 +120,14 @@ export default function MyStack() {
         component={ProductDetails}
         options={{
           title: 'Product Details',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="PaymentSuccess"
+        component={PaymentSuccessScreen}
+        options={{
+          title: 'Payment Success',
           headerShown: false,
         }}
       />

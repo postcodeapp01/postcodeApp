@@ -1,5 +1,4 @@
-// src/components/cart/CartItem.tsx
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,7 +6,7 @@ import {
   Image,
   TouchableOpacity,
   GestureResponderEvent,
-  Platform,
+  TextInput,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -57,23 +56,36 @@ const CartItem: React.FC<Props> = ({
     estimatedTime,
     size,
   } = item;
-  // console.log(item);
+  // console.log('Card item', item);
+  const [qtyInput, setQtyInput] = useState(String(qty));
   const deliveryTag = 'Delivery in 60mins';
   const handleQtyIncrease = (e?: GestureResponderEvent) => {
-    const next = qty >= 9 ? 1 : qty + 1;
+    const next = qty + 1;
     onQtyChange(next);
   };
   const handleQtyDecrease = (e?: GestureResponderEvent) => {
-  const next = qty <= 1 ? 1 : qty - 1;
-  onQtyChange(next);
-};
+    const next = qty <= 1 ? 1 : qty - 1;
+    onQtyChange(next);
+  };
   const handleSizePress = () => {
     if (!onSizeChange) return;
     const curIndex = sampleSizes.indexOf(size ?? 'XS');
     const next = sampleSizes[(curIndex + 1) % sampleSizes.length];
     onSizeChange(next);
   };
+  const handleQtyInputChange = (text: string) => {
+    // Remove non-numeric characters
+    const numericValue = text.replace(/[^0-9]/g, '');
+    setQtyInput(numericValue);
 
+    if (numericValue) {
+      const parsedQty = Math.max(1, Math.min(99, parseInt(numericValue, 10)));
+      onQtyChange(parsedQty);
+    }
+  };
+  useEffect(() => {
+    setQtyInput(String(qty)); // keep input in sync when qty changes externally
+  }, [qty]);
   return (
     <View style={styles.card}>
       {/* Delivery Tag Overlapping */}
@@ -91,7 +103,12 @@ const CartItem: React.FC<Props> = ({
 
       {/* Main Content */}
       <View style={styles.row}>
-        <Image source={{uri: image}} style={styles.image} />
+        <Image
+          source={
+            image ? {uri: image} : require('../../../sources/images/c1.png')
+          }
+          style={styles.image}
+        />
 
         <View style={styles.main}>
           {/* Title + subname */}
@@ -119,33 +136,37 @@ const CartItem: React.FC<Props> = ({
 
           {/* Qty & Size */}
           <View style={styles.selectRow}>
-            <View
-              style={styles.selectBox}
-              // onPress={handleQtyPress}
-              // activeOpacity={0.75}
-              >
+            <View style={styles.selectBox}>
               <Text style={styles.selectLabel}>Qty</Text>
               <View style={styles.selectValueRow}>
-                <Text style={styles.selectValue}> {qty}</Text>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <TouchableOpacity
-                  onPress={handleQtyDecrease}>
-
-                  <MaterialIcons
-                    name="arrow-drop-up"
-                    color={'#B1B1B1'}
-                    size={20}
-                  />
+                {/* <Text style={styles.selectValue}> {qty<10?'0'+qty:qty}</Text> */}
+                <TextInput
+                  value={qtyInput}
+                  onChangeText={handleQtyInputChange}
+                  keyboardType="numeric"
+                  maxLength={2} // optional: limit to 2 digits
+                  style={[styles.selectValue, styles.qtyInput]} // add extra style for input
+                />
+                <View
+                  style={{
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    left: -11,
+                  }}>
+                  <TouchableOpacity onPress={handleQtyDecrease}>
+                    <MaterialIcons
+                      name="arrow-drop-up"
+                      color={'#B1B1B1'}
+                      size={20}
+                    />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                  onPress={handleQtyIncrease}>
-
-                  <MaterialIcons
-                    name="arrow-drop-down"
-                    color={'#B1B1B1'}
-                    size={20}
-                    style={{marginTop: -11}}
-                  />
+                  <TouchableOpacity onPress={handleQtyIncrease}>
+                    <MaterialIcons
+                      name="arrow-drop-down"
+                      color={'#B1B1B1'}
+                      size={20}
+                      style={{marginTop: -11}}
+                    />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -157,13 +178,7 @@ const CartItem: React.FC<Props> = ({
               activeOpacity={0.75}>
               <Text style={styles.selectLabel}>Size</Text>
               <View style={styles.selectValueRow}>
-                <Text style={styles.selectValue}> {size ?? 'XS'}</Text>
-                {/* <MaterialIcons
-                  name="arrow-drop-down"
-                  color={'#B1B1B1'}
-                  size={20}
-                  style={{left: -6, top: -1}}
-                /> */}
+                <Text style={styles.selectValue}>{size ? size : 'S'}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -261,12 +276,27 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
-  main: {flex: 1, justifyContent: 'space-between'},
+  main: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
 
-  name: {fontSize: 12, fontWeight: '500', color: '#000', lineHeight: 15},
-  subname: {fontSize: 10, color: '#AAAAAA', lineHeight: 15},
+  name: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#000',
+    lineHeight: 15,
+  },
+  subname: {
+    fontSize: 10,
+    color: '#AAAAAA',
+    lineHeight: 15,
+  },
 
-  priceRow: {flexDirection: 'row', alignItems: 'center'},
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   priceText: {
     fontSize: 12,
     fontWeight: '600',
@@ -292,7 +322,10 @@ const styles = StyleSheet.create({
     letterSpacing: -0.32,
   },
 
-  selectRow: {flexDirection: 'row', marginTop: 8},
+  selectRow: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
   selectBox: {
     width: 55,
     height: 20,
@@ -305,11 +338,32 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#fff',
   },
-  selectLabel: {fontSize: 10, color: '#B1B1B1'},
-  selectValueRow: {flexDirection: 'row', alignItems: 'center'},
-  selectValue: {fontSize: 10, fontWeight: '400', marginRight: 4},
-
-  pillRow: {flexDirection: 'column', alignItems: 'flex-start', left: -8},
+  selectLabel: {
+    fontSize: 10,
+    color: '#B1B1B1',
+  },
+  selectValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selectValue: {
+    color: '#000',
+    fontSize: 10,
+    fontWeight: '400',
+    marginRight: 4,
+  },
+  qtyInput: {
+    textAlign: 'center',
+    fontSize: 10,
+    fontWeight: '400',
+    paddingVertical: -1,
+    paddingHorizontal: -4,
+  },
+  pillRow: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    left: -8,
+  },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',

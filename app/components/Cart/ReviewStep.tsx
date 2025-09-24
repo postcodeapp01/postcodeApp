@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import CartSummary from './CartSummary';
 import {CartData} from '../../screens/CartScreen';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import OfferSection from '../BuyNow/OfferSection';
 interface ReviewStepProps {
   cartData: CartData;
@@ -42,7 +41,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({cartData, onNext}) => {
           {cartData.items.map(item => (
             <View key={item.cartId} style={styles.orderItem}>
               <Image
-                source={{uri: item.image}}
+                source={item.image?{uri: item.image}: require('../../../sources/images/c1.png')}
                 style={styles.itemImage}
                 resizeMode="cover"
               />
@@ -75,21 +74,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({cartData, onNext}) => {
           ))}
         </View>
         {/* Offers Section */}
-        {/* <View style={styles.section}>
-          <View style={styles.offerContainer}>
-            <Icon name="local-offer" size={20} color="#FF6B6B" />
-            <View style={styles.offerContent}>
-              <Text style={styles.offerTitle}>FIRST</Text>
-              <Text style={styles.offerSubtitle}>
-                Save ₹50 on first order {'\n'}
-                Use code FIRST. T&Cs apply
-              </Text>
-            </View>
-            <TouchableOpacity style={styles.applyButton}>
-              <Text style={styles.applyButtonText}>APPLY</Text>
-            </TouchableOpacity>
-          </View>
-        </View> */}
         <OfferSection offers={ [
           {
             code: 'FIRST',

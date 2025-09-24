@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {
   View,
   Text,
@@ -10,22 +10,9 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import axiosInstance from '../../../config/Api';
-
-const PLACEHOLDER_URI = 'https://via.placeholder.com/64';
-
-const formatImageUrl = (url: string | null | undefined): string => {
-  if (!url) return PLACEHOLDER_URI;
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  try {
-    const base = axiosInstance?.defaults?.baseURL ?? '';
-    const u = new URL(base);
-    const origin = `${u.protocol}//${u.host}`;
-    if (url.startsWith('/')) return `${origin}${url}`;
-    return `${origin}/${url}`;
-  } catch {
-    return PLACEHOLDER_URI;
-  }
-};
+import {useSelector} from 'react-redux';
+import {RootState} from '../../../Store';
+import {calculateDistance} from '../../common/utils/distanceCalculator';
 
 interface SearchOverlayProps {
   visible: boolean;
@@ -51,8 +38,18 @@ export default function SearchOverlay({
   const [recentSearches, setRecentSearches] = useState<any[]>([]);
   const [recommendedFeaturedProducts, setRecommendedFeaturedProducts] =
     useState<any[]>([]);
+  const userLoc = useSelector(
+    (state: RootState) => state.user?.userDetails?.location,
+  );
 
-  // fetch recommended/recent when overlay becomes visible
+  const userLat =
+    userLoc?.lat !== undefined && userLoc?.lat !== null
+      ? Number(userLoc.lat)
+      : undefined;
+  const userLng =
+    userLoc?.lng !== undefined && userLoc?.lng !== null
+      ? Number(userLoc.lng)
+      : undefined;
   useEffect(() => {
     if (!visible) return;
 
@@ -104,10 +101,6 @@ export default function SearchOverlay({
                 `/search/fproducts?query=${encodeURIComponent(searchQuery)}`,
               ),
             ]);
-          //   console.log('stores Data2', storesRes);
-          //   console.log('prducts Data2', productsRes);
-          //   console.log('categoriesData Data2', categoriesRes);
-          //   console.log('fproductsData Data2', fproductsRes);
           setSearchResults({
             stores: storesRes.data?.stores?.slice(0, 3) || [],
             products: productsRes.data?.products?.slice(0, 5) || [],
@@ -132,19 +125,14 @@ export default function SearchOverlay({
       searchResults.products?.length > 0 ||
       searchResults.categories?.length > 0 ||
       searchResults.fproducts?.length > 0);
-
-  const handleDeleteRecentSearch = async (term: string) => {
-    try {
-      await axiosInstance.delete(
-        `/search/recentStores/${encodeURIComponent(term)}`,
-      );
-      // Refresh recent searches
-      const recentStoresRes = await axiosInstance.get('/search/recentStores');
-      setRecentSearches(recentStoresRes.data?.data || []);
-    } catch (error) {
-      console.error('Failed to delete recent search:', error);
+  const formatDistance = (meters: number) => {
+    if (!Number.isFinite(meters)) return '';
+    if (meters >= 1000) {
+      return `${(meters / 1000).toFixed(1)} km`;
     }
+    return `${Math.round(meters)} m`;
   };
+ 
 
   if (!visible) return null;
 
@@ -155,8 +143,7 @@ export default function SearchOverlay({
       keyboardShouldPersistTaps="handled">
       {searchQuery.length === 0 ? (
         <View style={styles.initialContent}>
-          {/* Recent searches */}
-          {recentSearches.length > 0 && (
+          {/* {recentSearches.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recent Searches</Text>
               {recentSearches.slice(0, 8).map(item => (
@@ -174,7 +161,7 @@ export default function SearchOverlay({
                 </TouchableOpacity>
               ))}
             </View>
-          )}
+          )} */}
 
           {/* Trending searches - can be static for demo */}
           <View style={styles.section}>
@@ -193,7 +180,7 @@ export default function SearchOverlay({
           </View>
 
           {/* Recommended Featured Products */}
-          {recommendedFeaturedProducts.length > 0 && (
+          {/* {recommendedFeaturedProducts.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recommended</Text>
               <View style={styles.productGrid}>
@@ -214,7 +201,7 @@ export default function SearchOverlay({
                 ))}
               </View>
             </View>
-          )}
+          )} */}
         </View>
       ) : isSearching ? (
         <View style={styles.loadingContainer}>
@@ -230,26 +217,58 @@ export default function SearchOverlay({
       ) : (
         <View style={styles.resultsContent}>
           {/* Search Results */}
-          {searchResults?.stores?.length > 0 && (
-            <View style={styles.resultSection}>
-              <Text style={styles.resultSectionTitle}>Stores</Text>
-              {searchResults.stores.map((store: any) => (
-                <TouchableOpacity
-                  key={store.store_id}
-                  onPress={() => onStoreSelect(store.store_id)}
-                  style={styles.resultItem}>
-                  <Image
-                    source={{uri: formatImageUrl(store.logo_url)}}
-                    style={styles.storeResultImage}
-                  />
-                  <View style={styles.resultItemContent}>
-                    <Text style={styles.resultItemTitle}>{store.name}</Text>
-                    <Text style={styles.resultItemSubtitle}>{store.city}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          {searchResults.stores.map((store: any) => {
+            let distance = '';
+            if (
+              typeof userLat === 'number' &&
+              typeof userLng === 'number' &&
+              store.latitude &&
+              store.longitude
+            ) {
+              const storeLat = Number(store.latitude);
+              const storeLng = Number(store.longitude);
+              if (Number.isFinite(storeLat) && Number.isFinite(storeLng)) {
+                const distMeters = calculateDistance(
+                  storeLat,
+                  storeLng,
+                  userLat,
+                  userLng,
+                );
+                distance = formatDistance(distMeters);
+              }
+            }
+
+            return (
+              <TouchableOpacity
+                key={store.id}
+                onPress={() => onStoreSelect(store.id)}
+                style={styles.resultItem}>
+                <View style={styles.leftColumn}>
+                  {store.logo ? (
+                    <Image
+                      source={{uri: store.logo}}
+                      style={styles.storeResultImage}
+                    />
+                  ) : (
+                    <View
+                      style={[styles.storeResultImage, styles.placeholder]}
+                    />
+                  )}
+
+                  {distance ? (
+                    <Text style={styles.distanceText}>{distance}</Text>
+                  ) : null}
+                </View>
+
+                <View style={styles.resultItemContent}>
+                  <Text style={styles.resultItemTitle}>{store.name}</Text>
+                  <Text style={styles.resultItemSubtitle}>
+                    {store.location}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
 
           {searchResults?.categories?.length > 0 && (
             <View style={styles.resultSection}>
@@ -261,7 +280,7 @@ export default function SearchOverlay({
                   onPress={() => onCategorySelect(category.id)}>
                   {category.image ? (
                     <Image
-                      source={{uri: formatImageUrl(category.image)}}
+                      source={{uri: category.image}}
                       style={styles.categoryResultImage}
                     />
                   ) : (
@@ -285,11 +304,11 @@ export default function SearchOverlay({
                   key={product.product_id}
                   style={styles.resultItem}
                   onPress={() => {
-                    console.log('product', product);
+                    // console.log('product', product);
                     onProductSelect(product.id);
                   }}>
                   <Image
-                    source={{uri: formatImageUrl(product.image)}}
+                    source={{uri: product.image}}
                     style={styles.productResultImage}
                   />
                   <View style={styles.resultItemContent}>
@@ -426,13 +445,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#DDDDDD',
+  },
+  leftColumn: {
+    width: 64,
+    alignItems: 'center',
+    marginRight: 12,
   },
   storeResultImage: {
     width: 40,
-    height: 40,
-    borderRadius: 20,
+    height: 30,
     marginRight: 12,
+    padding: 0,
+  },
+  placeholder: {
+    backgroundColor: '#f0f0f0',
+  },
+
+  distanceText: {
+    marginTop: 6,
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#000', // near-black
   },
   categoryResultImage: {
     width: 40,

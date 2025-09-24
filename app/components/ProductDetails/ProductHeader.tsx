@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/Feather"; // For arrow-left, share, shopping-bag
 import AntIcon from "react-native-vector-icons/AntDesign"; // For hearto
-import MaterialIcon from "react-native-vector-icons/MaterialIcons"; // Optional if needed
 
 interface Props {
   title: string;

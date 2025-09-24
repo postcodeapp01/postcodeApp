@@ -15,6 +15,6 @@ export default EmptyCart;
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 18, fontWeight: '700', marginBottom: 6 },
+  title: { fontSize: 18, fontWeight: '700', marginBottom: 6,color: '#000' },
   sub: { fontSize: 14, color: '#777' },
 });

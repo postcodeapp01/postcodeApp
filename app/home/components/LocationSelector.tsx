@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState, useCallback} from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,82 +10,61 @@ import {
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {useNavigation} from '@react-navigation/native';
-import {useDispatch, useSelector} from 'react-redux';
-import {AppDispatch} from '../../../Store';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../Store';
 
-import AddressList from '../../userProfile/components/Address/AddressList'; // updated AddressList
-import {Address as TAddress} from '../../userProfile/components/Address/address';
+import AddressList from '../../userProfile/components/Address/AddressList';
+import { Address as TAddress } from '../../userProfile/components/Address/address';
 import {
   fetchAddresses,
-  selectAddresses,
+  selectDefaultAddress,
 } from '../../../reduxSlices/addressesSlice';
 
-const {height: WINDOW_HEIGHT} = Dimensions.get('window');
+const { height: WINDOW_HEIGHT } = Dimensions.get('window');
 const MODAL_HEIGHT = Math.round(WINDOW_HEIGHT * 0.8);
 
 const LocationSelector: React.FC = () => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch<AppDispatch>();
 
-  const addresses = useSelector(selectAddresses);
-
-  const defaultAddress = useMemo(
-    () => addresses.find(a => a.isDefault) ?? null,
-    [addresses],
+  const defaultAddress = useSelector(selectDefaultAddress);
+  const userLocation = useSelector(
+    (state: RootState) => state.user.userDetails?.location,
   );
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<TAddress | null>(null);
-
   useEffect(() => {
     dispatch(fetchAddresses());
-  }, [dispatch]);
+  }, [dispatch, userLocation?.lat, userLocation?.lng]);
+  
 
-  useEffect(() => {
-    if (!selectedAddress && addresses.length > 0) {
-      const pick = defaultAddress ?? addresses[0];
-      setSelectedAddress({...pick, label: pick.label ?? ''});
-    }
-  }, [addresses, defaultAddress, selectedAddress]);
-
-  // called by AddressList when user taps an address item
-  const onAddressPress = useCallback((addr: TAddress) => {
-    setSelectedAddress(addr);
-    setModalVisible(false);
-  }, []);
-
-  // called to close modal before navigation to Add (so AddAddressScreen unblocks touches)
   const onStartAdd = useCallback(() => setModalVisible(false), []);
   const onStartEdit = useCallback(() => setModalVisible(false), []);
-
-  const handleRefresh = () => dispatch(fetchAddresses());
+  const formatAddressForDisplay = (address: TAddress | null) => {
+    if (!address) return '';
+    const parts = [address.addressLine1, address.addressLine2, address.city].filter(Boolean);
+    return parts.join(', ');
+  };
 
   return (
     <View>
       <TouchableOpacity
         style={styles.selectedLocation}
-        onPress={() => setModalVisible(true)}>
+        onPress={() => setModalVisible(true)}
+        activeOpacity={0.8}>
         <Icon name="location-sharp" size={16} color="#000" />
+
         <Text style={styles.locationName} numberOfLines={1}>
-          {defaultAddress?.name ?? selectedAddress?.name ?? 'Select address'}
+          {defaultAddress?.name }
         </Text>
+
         <View style={styles.separator} />
+
         <Text style={styles.locationAddress} numberOfLines={1}>
-          {defaultAddress
-            ? `${defaultAddress.addressLine1}${
-                defaultAddress.addressLine2
-                  ? ', ' + defaultAddress.addressLine2
-                  : ''
-              }${defaultAddress.city ? ', ' + defaultAddress.city : ''}`
-            : selectedAddress
-            ? `${selectedAddress.addressLine1}${
-                selectedAddress.addressLine2
-                  ? ', ' + selectedAddress.addressLine2
-                  : ''
-              }${selectedAddress.city ? ', ' + selectedAddress.city : ''}`
-            : ''}
+          {formatAddressForDisplay(defaultAddress)}
         </Text>
+
         <Icon name="chevron-down" size={18} color="#AAA" />
       </TouchableOpacity>
 
@@ -96,23 +75,19 @@ const LocationSelector: React.FC = () => {
         onRequestClose={() => setModalVisible(false)}>
         <StatusBar backgroundColor="rgba(0,0,0,0.4)" barStyle="light-content" />
         <View style={styles.modalOverlay}>
-          {/* tappable background sibling */}
           <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-            <View style={{flex: 1}} />
+            <View style={{ flex: 1 }} />
           </TouchableWithoutFeedback>
 
-          {/* modal content sibling */}
-          <View style={[styles.modalContainer, {height: MODAL_HEIGHT}]}>
+          <View style={[styles.modalContainer, { height: MODAL_HEIGHT }]}>
             <Text style={styles.title}>Select a Delivery Address</Text>
 
-            {/* Here we embed the reusable AddressList and pass the "modal hooks" */}
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <AddressList
                 navigation={navigation}
-                onAddressPress={onAddressPress}
                 onStartAdd={onStartAdd}
                 onStartEdit={onStartEdit}
-                hideAddButton={false} // you can set true if you want Add button outside content
+                hideAddButton={false}
               />
             </View>
           </View>
@@ -122,20 +97,33 @@ const LocationSelector: React.FC = () => {
   );
 };
 
-export default LocationSelector;
-
 const styles = StyleSheet.create({
-  bottomBar: {
-    backgroundColor: '#fff',
-    height: 70,
-  },
   selectedLocation: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 14,
     paddingVertical: 8,
-    marginBottom: 5,
+    paddingHorizontal: 10,
+  },
+  locationName: {
+    fontSize:12,
+    fontWeight: '500',
+    marginHorizontal: 5,
+    color:'#222222',
+    letterSpacing:0.1,
+    lineHeight:20,
+  },
+  separator: {
+    width: 1,
+    backgroundColor: '#000',
+    height: '100%',
+    marginHorizontal: 3,
+  },
+  locationAddress: {
+    flex: 1,
+    color: '#222',
+    fontSize: 12,
+    letterSpacing:0.1,
+    lineHeight:20,
   },
   modalOverlay: {
     flex: 1,
@@ -143,37 +131,17 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    overflow: 'hidden',
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   title: {
-    fontSize: 16,
     fontWeight: '500',
-    padding: 16,
-    lineHeight: 20,
-    letterSpacing: 0.1,
-    borderBottomWidth: 1,
-    borderBottomColor: '#D5D5D5',
-  },
-  locationName: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#000',
-    left: 3,
-  },
-  separator: {
-    width: 1,
-    height: '80%',
-    backgroundColor: '#000',
-    marginHorizontal: 8,
-  },
-  locationAddress: {
-    flex: 1,
-    fontSize: 12,
-    color: '#222',
-    lineHeight: 20,
-    letterSpacing: 0.1,
+    marginBottom: 10,
+    letterSpacing:0.1,
+    lineHeight:20,
   },
 });
+
+export default LocationSelector;

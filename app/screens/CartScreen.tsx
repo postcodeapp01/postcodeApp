@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import TopSteps from '../components/Cart/TopSteps';
-import AddressBar from '../components/Cart/AddressBar';
 import CartStep from '../components/Cart/CartStep';
 import ReviewStep from '../components/Cart/ReviewStep';
 import PaymentStep from '../components/Cart/PaymentStep';
@@ -20,12 +19,15 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import axiosInstance from '../../config/Api';
 import {CartItemType} from '../components/Cart/CartItem';
-import PaymentSuccessScreen from '../components/Cart/PaymentSuccessPage';
+import LocationSelector from '../home/components/LocationSelector';
+import {useSelector} from 'react-redux';
+import {selectDefaultAddress} from '../../reduxSlices/addressesSlice';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
 export interface CartData {
   items: CartItemType[];
+  deliveryAddressId: string;
   deliveryAddress: string;
   paymentMethod: string;
   subtotal: number;
@@ -38,9 +40,15 @@ export interface CartData {
 const CartScreen: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
+  const defaultAddress = useSelector(selectDefaultAddress);
   const [cartData, setCartData] = useState<CartData>({
     items: [],
-    deliveryAddress: 'HOME.... | 10-B-681, Laldarwaza mahankali, Hyderabad...',
+    deliveryAddressId:defaultAddress.id,
+    deliveryAddress: defaultAddress
+      ? `${defaultAddress.label ?? 'Home'} | ${defaultAddress.addressLine1}, ${
+          defaultAddress.city
+        }, ${defaultAddress.state}`
+      : 'HOME.... | 10-B-681, Laldarwaza mahankali, Hyderabad...',
     paymentMethod: '',
     subtotal: 0,
     deliveryFee: 0,
@@ -48,30 +56,31 @@ const CartScreen: React.FC = () => {
     platformFee: 8,
     total: 0,
   });
-
+  useEffect(() => {
+    if (defaultAddress) {
+      setCartData(prev => ({
+        ...prev,
+        deliveryAddress: `${defaultAddress.label ?? 'Home'} | ${
+          defaultAddress.addressLine1
+        }, ${defaultAddress.city}, ${defaultAddress.state}`,
+      }));
+    }
+  }, [defaultAddress]);
   const navigation = useNavigation<NavigationProp>();
-
-  // Step titles for header
   const stepTitles = ['My Cart', 'Review Order', 'Payment'];
-
-  // Fetch cart data from backend
   useEffect(() => {
     const fetchCart = async () => {
       try {
         setLoading(true);
         const res = await axiosInstance.get('/cart');
         const items = res.data || [];
-        console.log("Items detting from the backend",items)
-        // Calculate totals
         const subtotal = items.reduce(
           (acc: number, item: CartItemType) => acc + item.price * item.qty,
           0,
         );
-        const deliveryFee = subtotal > 500 ? 0 : 0; // Free delivery above ₹500
-        const gst = Math.round(subtotal * 0.18); // 18% GST
-        const total = subtotal + deliveryFee
-        //  + gst + cartData.platformFee;
-
+        const deliveryFee = subtotal > 500 ? 0 : 0; 
+        const gst = Math.round(subtotal * 0.18);
+        const total = subtotal + deliveryFee;
         setCartData(prev => ({
           ...prev,
           items,
@@ -121,7 +130,7 @@ const CartScreen: React.FC = () => {
       );
       const deliveryFee = subtotal > 500 ? 0 : 0;
       // const gst = Math.round(subtotal * 0.18);
-      const total = subtotal + deliveryFee 
+      const total = subtotal + deliveryFee;
       // + gst + cartData.platformFee;
 
       setCartData(prev => ({
@@ -150,9 +159,7 @@ const CartScreen: React.FC = () => {
       );
       const deliveryFee = subtotal > 500 ? 0 : 0;
       // const gst = Math.round(subtotal * 0.18);
-      const total = subtotal + deliveryFee 
-      //  + cartData.platformFee;
-
+      const total = subtotal + deliveryFee;
       setCartData(prev => ({
         ...prev,
         items: updatedItems,
@@ -200,14 +207,8 @@ const CartScreen: React.FC = () => {
     );
   }
 
-  if (cartData.items.length === 0 && currentStep === 0) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <EmptyCart />
-      </SafeAreaView>
-    );
-  }
-  // console.log(cartData[0])
+  
+  // console.log(cartData)
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
@@ -222,9 +223,9 @@ const CartScreen: React.FC = () => {
             <Text style={styles.headerTitle}>{stepTitles[currentStep]}</Text>
 
             {currentStep === 0 && (
-              <TouchableOpacity style={styles.heartBtn}
-              onPress={() => navigation.navigate('WishlistScreen')}
-              >
+              <TouchableOpacity
+                style={styles.heartBtn}
+                onPress={() => navigation.navigate('WishlistScreen')}>
                 <AntDesign name="hearto" size={16} color="#000" />
               </TouchableOpacity>
             )}
@@ -236,22 +237,24 @@ const CartScreen: React.FC = () => {
 
           {/* Address Bar */}
           {currentStep === 0 && (
-            <AddressBar
-              address={cartData.deliveryAddress}
-              onChange={updateAddress}
-            />
+
+            <LocationSelector />
           )}
         </View>
 
         {/* DYNAMIC CONTENT SECTION */}
         <View style={styles.contentSection}>
           {currentStep === 0 && (
-            <CartStep
-              cartData={cartData}
-              onUpdateItem={updateCartItem}
-              onRemoveItem={removeCartItem}
-              onNext={handleNextStep}
-            />
+            cartData.items.length === 0 ? (
+              <EmptyCart />
+            ) : (
+              <CartStep
+                cartData={cartData}
+                onUpdateItem={updateCartItem}
+                onRemoveItem={removeCartItem}
+                onNext={handleNextStep}
+              />
+            )
           )}
 
           {currentStep === 1 && (
@@ -269,6 +272,7 @@ const CartScreen: React.FC = () => {
             />
             // <PaymentSuccessScreen/>
           )}
+         
         </View>
       </View>
     </SafeAreaView>
@@ -294,7 +298,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
   },
   backBtn: {
     padding: 8,
@@ -305,8 +309,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#000',
     flex: 1,
-    lineHeight:20,
-    letterSpacing:-0.32,
+    lineHeight: 20,
+    letterSpacing: -0.32,
   },
   heartBtn: {
     padding: 8,

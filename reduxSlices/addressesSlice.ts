@@ -1,9 +1,8 @@
-import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {RootState} from '../Store';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { RootState } from '../Store';
 import axiosInstance from '../config/Api';
 import { calculateDistance } from '../app/common/utils/distanceCalculator';
 
-// ---------- Types ----------
 export type Address = {
   id: string;
   name: string;
@@ -18,275 +17,264 @@ export type Address = {
   lat?: number;
   lng?: number;
   isDefault?: boolean;
+  isSuggested?: boolean;
 };
 
 type AddressesState = {
   items: Address[];
+  defaultAddress: Address | null;
   loading: boolean;
-  refreshing: boolean;
-  markingDefault: boolean; // Add this for better UX
   error: string | null;
-   nearestAutoSelected: boolean;
 };
 
 const initialState: AddressesState = {
   items: [],
+  defaultAddress: null,
   loading: false,
-  refreshing: false,
-  markingDefault: false, // Add this
   error: null,
-  nearestAutoSelected: false,
 };
 
-// ---------- Helpers ----------
 const normalizeAddress = (addr: any): Address => ({
   id: String(addr.id),
-  name: addr.name,
-  label: addr.label,
-  addressLine1: addr.addressLine1,
-  addressLine2: addr.addressLine2 || '',
-  city: addr.city,
-  state: addr.state,
-  country: addr.country,
-  pincode: addr.pincode,
-  phone: addr.phone,
-  lat: addr.lat ? parseFloat(addr.lat) : undefined,
-  lng: addr.lng ? parseFloat(addr.lng) : undefined,
-  isDefault: Boolean(addr.isDefault),
+  name: addr.name ?? 'Address',
+  label: addr.label ?? undefined,
+  addressLine1: addr.addressLine1 ?? addr.formattedAddress ?? '',
+  addressLine2: addr.addressLine2 ?? '',
+  city: addr.city ?? '',
+  state: addr.state ?? '',
+  country: addr.country ?? '',
+  pincode: addr.pincode ?? '',
+  phone: addr.phone ?? '',
+  lat: addr.lat !== undefined && addr.lat !== null ? Number(addr.lat) : undefined,
+  lng: addr.lng !== undefined && addr.lng !== null ? Number(addr.lng) : undefined,
+  isDefault: false,
+  isSuggested: false,
 });
 
-// ---------- Async thunks ----------
-// export const fetchAddresses = createAsyncThunk<Address[]>(
-//   'addresses/fetchAll',
-//   async (_, {rejectWithValue}) => {
-//     try {
-//       const {data} = await axiosInstance.get('/address');
-//       return (data.address ?? []).map(normalizeAddress);
-//     } catch (err: any) {
-//       return rejectWithValue(
-//         err.response?.data?.message || 'Failed to load addresses',
-//       );
-//     }
-//   },
-// );
+const coordsEqual = (aLat?: number, aLng?: number, bLat?: number, bLng?: number, tol = 1e-6) =>
+  typeof aLat === 'number' &&
+  typeof aLng === 'number' &&
+  typeof bLat === 'number' &&
+  typeof bLng === 'number' &&
+  Math.abs(aLat - bLat) < tol &&
+  Math.abs(aLng - bLng) < tol;
+
 export const fetchAddresses = createAsyncThunk<
-  Address[],
+  { addresses: Address[]; defaultAddress: Address | null },
   void,
-  { state: RootState; dispatch: any }
->('addresses/fetchAll', async (_, { getState, dispatch, rejectWithValue }) => {
+  { state: RootState }
+>('addresses/fetchAll', async (_, { getState, rejectWithValue }) => {
   try {
     const { data } = await axiosInstance.get('/address');
-    let addresses: Address[] = (data.address ?? []).map(normalizeAddress);
+    let addresses: Address[] = Array.isArray(data?.address)
+      ? data.address.map(normalizeAddress)
+      : [];
+
+    const serverMarkedDefault = addresses.find((a) => !!a.isDefault);
 
     const state = getState();
-    const userLocation = state.user.userDetails.location;
-    const alreadyAutoSelected = state.addresses.nearestAutoSelected;
+    const userLoc = state.user?.userDetails?.location;
+    if (!userLoc || userLoc.lat == null || userLoc.lng == null) {
+      return {
+        addresses,
+        defaultAddress: serverMarkedDefault ?? addresses[0] ?? null,
+      };
+    }
 
-    if (userLocation && addresses.length > 0 && !alreadyAutoSelected) {
-      let nearest: Address | null = null;
-      let nearestDistance = Infinity;
+    const userLat = Number(userLoc.lat);
+    const userLng = Number(userLoc.lng);
 
-      addresses.forEach(addr => {
-        if (addr.lat && addr.lng) {
-          const distance = calculateDistance(
-            addr.lat,
-            addr.lng,
-            userLocation.lat,
-            userLocation.lng
-          );
+    if (!Number.isFinite(userLat) || !Number.isFinite(userLng)) {
+      return {
+        addresses,
+        defaultAddress: serverMarkedDefault ?? addresses[0] ?? null,
+      };
+    }
 
-          if (distance < nearestDistance) {
-            nearestDistance = distance;
-            nearest = addr;
-          }
+    const thresholdMeters = 50;
+    let nearest: { addr: Address; dist: number } | null = null;
+
+    for (const addr of addresses) {
+      if (typeof addr.lat === 'number' && typeof addr.lng === 'number') {
+        const dist = calculateDistance(addr.lat, addr.lng, userLat, userLng);
+        console.log(dist)
+        if (!Number.isFinite(dist)) continue;
+        if (dist <= thresholdMeters && (nearest === null || dist < nearest.dist)) {
+          nearest = { addr, dist };
         }
-      });
-
-      if (nearest) {
-        addresses = addresses.map(addr => ({
-          ...addr,
-          isDefault: addr.id === nearest?.id,
-        }));
-
-        // ✅ Mark nearest as default in backend
-        dispatch(markDefault(nearest.id));
-        // ✅ Mark that we have already auto-selected once
-        dispatch(setNearestAutoSelected(true));
       }
     }
 
-    return addresses;
+    if (nearest) {
+      return {
+        addresses,
+        defaultAddress: nearest.addr,
+      };
+    }
+
+    try {
+      const { data: geocodeData } = await axiosInstance.post('/googlemaps/reverse-geocode', {
+        lat: userLat,
+        lng: userLng,
+      });
+
+      const suggested: Address = {
+        id: `suggested-${Date.now()}`,
+        name: getState()?.user?.userDetails?.name ?? 'Current Location',
+        label: 'Home',
+        addressLine1:
+          geocodeData?.addressLine1 ??
+          geocodeData?.formattedAddress ??
+          `${userLat.toFixed(6)}, ${userLng.toFixed(6)}`,
+        addressLine2: geocodeData?.addressLine2 ?? '',
+        city: geocodeData?.city ?? '',
+        state: geocodeData?.state ?? '',
+        country: geocodeData?.country ?? '',
+        pincode: geocodeData?.pincode ?? '',
+        phone: '',
+        lat: userLat,
+        lng: userLng,
+        isDefault: true,
+        isSuggested: true,
+      };
+      addresses = [suggested, ...addresses];
+
+      return {
+        addresses,
+        defaultAddress: suggested,
+      };
+    } catch (err) {
+      const fallbackSuggested: Address = {
+        id: `suggested-${Date.now()}`,
+        name: state.user?.userDetails?.name ?? 'Current Location',
+        label: 'Current Location',
+        addressLine1: `${userLat.toFixed(6)}, ${userLng.toFixed(6)}`,
+        addressLine2: '',
+        city: '',
+        state: '',
+        country: '',
+        pincode: '',
+        phone: '',
+        lat: userLat,
+        lng: userLng,
+        isDefault: true,
+        isSuggested: true,
+      };
+      addresses = [fallbackSuggested, ...addresses];
+
+      return {
+        addresses,
+        defaultAddress: fallbackSuggested,
+      };
+    }
   } catch (err: any) {
-    return rejectWithValue(
-      err.response?.data?.message || 'Failed to load addresses'
-    );
+    return rejectWithValue(err?.response?.data?.message ?? err?.message ?? 'Failed to load addresses');
   }
 });
 
-
-export const addAddress = createAsyncThunk<Address, Omit<Address, 'id'>>(
+export const addAddress = createAsyncThunk<Address, Omit<Address, 'id'>, { state: RootState }>(
   'addresses/add',
-  async (newAddress, {rejectWithValue}) => {
+  async (newAddress, { rejectWithValue }) => {
     try {
-      const {data} = await axiosInstance.post('/address', newAddress);
+      const { data } = await axiosInstance.post('/address', newAddress);
       return normalizeAddress(data);
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || 'Failed to add address',
-      );
+      return rejectWithValue(err?.response?.data?.message ?? err?.message ?? 'Failed to add address');
     }
-  },
+  }
 );
 
-export const updateAddress = createAsyncThunk<Address, Address>(
+export const updateAddress = createAsyncThunk<Address, Address, { state: RootState }>(
   'addresses/update',
-  async (address, {rejectWithValue}) => {
+  async (address, { rejectWithValue }) => {
     try {
-      const {data} = await axiosInstance.put(`/address/${address.id}`, address);
-      console.log("updated address",data)
+      const { data } = await axiosInstance.put(`/address/${address.id}`, address);
       return normalizeAddress(data);
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || 'Failed to update address',
-      );
+      return rejectWithValue(err?.response?.data?.message ?? err?.message ?? 'Failed to update address');
     }
-  },
+  }
 );
 
-export const deleteAddress = createAsyncThunk<string, string>(
+export const deleteAddress = createAsyncThunk<string, string, { state: RootState }>(
   'addresses/delete',
-  async (id, {rejectWithValue}) => {
+  async (id, { rejectWithValue }) => {
     try {
       await axiosInstance.delete(`/address/${id}`);
       return id;
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || 'Failed to delete address',
-      );
+      return rejectWithValue(err?.response?.data?.message ?? err?.message ?? 'Failed to delete address');
     }
-  },
+  }
 );
 
-// Updated markDefault thunk with better return type
-export const markDefault = createAsyncThunk<string, string>(
-  'addresses/markDefault',
-  async (id, {rejectWithValue}) => {
-    try {
-      const {data} = await axiosInstance.patch(`/address/${id}`, {
-        isDefault: 1,
-      });
-      // Return just the ID since we'll handle the state update in the reducer
-      return id;
-    } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || 'Failed to mark default',
-      );
-    }
-  },
-);
-
-// ---------- Slice ----------
 const addressesSlice = createSlice({
   name: 'addresses',
   initialState,
   reducers: {
-    upsertAddress: (state, action: PayloadAction<Address>) => {
-      const idx = state.items.findIndex(a => a.id === action.payload.id);
-      if (idx !== -1) {
-        state.items[idx] = action.payload;
-      } else {
-        state.items.push(action.payload);
-      }
+    setDefaultAddress: (state, action: PayloadAction<Address | null>) => {
+      state.defaultAddress = action.payload;
     },
-    setNearestAutoSelected: (state, action: PayloadAction<boolean>) => {
-    state.nearestAutoSelected = action.payload;
-  }
+    clearDefaultAddress: (state) => {
+      state.defaultAddress = null;
+    },
   },
-  extraReducers: builder => {
-    // fetchAddresses
-    builder.addCase(fetchAddresses.pending, state => {
+  extraReducers: (builder) => {
+    builder.addCase(fetchAddresses.pending, (state) => {
       state.loading = true;
       state.error = null;
-      state.refreshing = state.items.length > 0;
     });
-    builder.addCase(
-      fetchAddresses.fulfilled,
-      (state, action: PayloadAction<Address[]>) => {
-        state.loading = false;
-        state.refreshing = false;
-        state.items = action.payload;
-      },
-    );
+    builder.addCase(fetchAddresses.fulfilled, (state, action) => {
+      state.loading = false;
+      state.items = action.payload.addresses;
+      state.defaultAddress = action.payload.defaultAddress;
+    });
     builder.addCase(fetchAddresses.rejected, (state, action) => {
       state.loading = false;
-      state.refreshing = false;
-      state.error = action.payload as string;
+      state.error = (action.payload as string) ?? 'Failed to load addresses';
     });
 
-    // addAddress
-    builder.addCase(
-      addAddress.fulfilled,
-      (state, action: PayloadAction<Address>) => {
-        state.items.push(action.payload);
-      },
-    );
-
-    // updateAddress
-    builder.addCase(
-      updateAddress.fulfilled,
-      (state, action: PayloadAction<Address>) => {
-        const idx = state.items.findIndex(a => a.id === action.payload.id);
-        if (idx !== -1) {
-          state.items[idx] = action.payload;
+    builder.addCase(addAddress.fulfilled, (state, action: PayloadAction<Address>) => {
+      const newAddr = action.payload;
+      const suggestedIndex = state.items.findIndex(
+        (a) => a.id.startsWith('suggested-') && coordsEqual(a.lat, a.lng, newAddr.lat, newAddr.lng)
+      );
+      if (suggestedIndex !== -1) {
+        const suggested = state.items[suggestedIndex];
+        state.items.splice(suggestedIndex, 1);
+        if (state.defaultAddress?.id === suggested.id) {
+          state.defaultAddress = newAddr;
         }
-      },
-    );
-
-    // deleteAddress
-    builder.addCase(
-      deleteAddress.fulfilled,
-      (state, action: PayloadAction<string>) => {
-        state.items = state.items.filter(a => a.id !== action.payload);
-      },
-    );
-
-    // markDefault - Fixed implementation
-    builder.addCase(markDefault.pending, state => {
-      state.markingDefault = true;
-      state.error = null;
+      }
+      state.items.push(newAddr);
     });
-    builder.addCase(
-      markDefault.fulfilled,
-      (state, action: PayloadAction<string>) => {
-        state.markingDefault = false;
-        const targetId = action.payload;
-        
-        // Update all addresses: unset all defaults first, then set the target as default
-        state.items = state.items.map(address => ({
-          ...address,
-          isDefault: address.id === targetId,
-        }));
-      },
-    );
-    builder.addCase(markDefault.rejected, (state, action) => {
-      state.markingDefault = false;
-      state.error = action.payload as string;
+
+    builder.addCase(updateAddress.fulfilled, (state, action: PayloadAction<Address>) => {
+      const idx = state.items.findIndex((a) => a.id === action.payload.id);
+      if (idx !== -1) {
+        state.items[idx] = action.payload;
+      }
+      if (state.defaultAddress?.id === action.payload.id) {
+        state.defaultAddress = action.payload;
+      }
+    });
+
+    builder.addCase(deleteAddress.fulfilled, (state, action: PayloadAction<string>) => {
+      const deletedId = action.payload;
+      state.items = state.items.filter((a) => a.id !== deletedId);
+      if (state.defaultAddress?.id === deletedId) {
+        state.defaultAddress = state.items[0] ?? null;
+      }
     });
   },
 });
 
 // ---------- Selectors ----------
-export const selectAddresses = (state: RootState) => state.addresses.items;
-export const selectDefaultAddress = (state: RootState) =>
-  state.addresses.items.find(a => a.isDefault) ?? null;
-export const selectNonDefaultAddresses = (state: RootState) =>
-  state.addresses.items.filter(a => !a.isDefault);
-export const selectAddressesLoading = (state: RootState) =>
-  state.addresses.loading;
-export const selectAddressesRefreshing = (state: RootState) =>
-  state.addresses.refreshing;
-export const selectMarkingDefault = (state: RootState) =>
-  state.addresses.markingDefault;
-
-export const {upsertAddress,setNearestAutoSelected } = addressesSlice.actions;
+export const selectAllAddresses = (state: RootState) => state.addresses.items;
+export const selectDefaultAddress = (state: RootState) => state.addresses.defaultAddress;
+export const selectAddressById = (state: RootState, id: string | null) =>
+  state.addresses.items.find((a) => a.id === (id ?? '')) ?? null;
+console.log("in addressSlice",selectAddressById,selectDefaultAddress);
+// ---------- Exports ----------
+export const { setDefaultAddress, clearDefaultAddress } = addressesSlice.actions;
 export default addressesSlice.reducer;

@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -9,6 +10,7 @@ interface ProductsHeaderProps {
 }
 
 const ProductsHeader: React.FC<ProductsHeaderProps> = ({ title, productCount, onBack }) => {
+  const navigation=useNavigation();
   return (
     <View style={styles.header}>
       <View style={styles.headerContent}>
@@ -17,13 +19,13 @@ const ProductsHeader: React.FC<ProductsHeaderProps> = ({ title, productCount, on
         </TouchableOpacity>
         
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title}> {title}</Text>
           {productCount !== undefined && (
-            <Text style={styles.subtitle}>({productCount} items)</Text>
+            <Text style={styles.subtitle}>  ({productCount} items)</Text>
           )}
         </View>
         
-        <TouchableOpacity style={styles.searchButton}>
+        <TouchableOpacity style={styles.searchButton} onPress={()=>navigation.navigate('SearchScreen')}>
           <Icon name="search" size={24} color="#000" />
         </TouchableOpacity>
       </View>
@@ -52,7 +54,8 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     flex: 1,
-    alignItems: 'center',
+    flexDirection:'row',
+    alignItems:'center',
   },
   title: {
     fontSize: 18,

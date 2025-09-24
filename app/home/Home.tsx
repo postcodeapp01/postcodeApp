@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState} from 'react';
 import {
   View,
   Text,
@@ -14,17 +14,12 @@ import homeStyles from '../../sources/styles/HomeStyles';
 import {HomeStackParamList} from '../../navigators/stacks/HomeStack';
 import PickByCategory from './components/PickByCategory/PickByCategory';
 import ShopByBrands from './components/ShopByBrands/ShopByBrands';
-import {fetchStores} from '../../reduxSlices/storeSlice';
-import {fetchCategories} from '../../reduxSlices/categorySlice';
-import {AppDispatch} from '../../Store';
-import {useDispatch} from 'react-redux';
 import LocationSelector from './components/LocationSelector';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {KidsSection} from '../screens/KidsSection';
 import {WomenSection} from '../screens/WomenSection';
 import {MenSection} from '../screens/MenSection';
 import DeliveryNearYouComponent from './components/DeliveryNearYou';
-import { fetchAddresses } from '../../reduxSlices/addressesSlice';
 
 type NavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -33,14 +28,7 @@ type NavigationProp = NativeStackNavigationProp<
 
 export default function Home() {
   const navigation = useNavigation<NavigationProp>();
-  const dispatch = useDispatch<AppDispatch>();
   const [activeCategory, setActiveCategory] = useState<number | null>(null); // NEW
-
-  useEffect(() => {
-    dispatch(fetchStores());
-    dispatch(fetchCategories());
-    dispatch(fetchAddresses());
-  }, [dispatch]);
 
   // Callback when a category is clicked in PickByCategory
   const handleCategoryPress = (categoryId: number) => {
@@ -62,7 +50,7 @@ export default function Home() {
     // Navigate to store details
     console.log('Store pressed:', store.name);
   };
- 
+
   return (
     <View style={{flex: 1}}>
       <ScrollView
@@ -120,7 +108,7 @@ export default function Home() {
         {/* Conditional rendering of main section */}
         {activeCategory === null ? (
           <>
-            <ImageCarousel />
+            {/* <ImageCarousel /> */}
             <NearbyStores />
             <ShopByBrands />
             <DeliveryNearYouComponent

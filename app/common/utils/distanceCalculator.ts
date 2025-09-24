@@ -1,4 +1,3 @@
-
 export const calculateDistance = (lat: number,lng: number,ulat: number,ulng: number) => {
     const R = 6371e3; // metres
     const userLatitude = ulat;

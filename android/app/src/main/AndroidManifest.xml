@@ -24,6 +24,24 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
+        
+        <!-- Custom scheme (myapp://product/<id>) -->
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data android:scheme="trendrush" android:host="product" />
+        </intent-filter>
+
+        <!-- App Link (https://www.example.com/product/<id>) -->
+        <intent-filter android:autoVerify="true">
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data android:scheme="https" android:host="example.com" android:pathPrefix="/product" />
+        </intent-filter>
+
+
       </activity>
       <meta-data
         android:name="com.google.android.geo.API_KEY"

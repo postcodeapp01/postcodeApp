@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Text,
   Alert,
+  Linking,
+  Share,
 } from 'react-native';
 import ProductHeader from '../components/ProductDetails/ProductHeader';
 import ProductImageCarousel from '../components/ProductDetails/ProductImageCarousel';
@@ -53,7 +55,11 @@ type NavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 const ProductDetails: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation<NavigationProp>();
+  
+
   const {id} = route.params as {id: string};
+  console.log('🆔 Extracted Product ID:', id);
+
   const [selectedSize, setSelectedSize] = useState('M');
   const [selectedColor, setSelectedColor] = useState('Lime Green');
   const [activeTab, setActiveTab] = useState<'details' | 'reviews'>('details');
@@ -75,6 +81,30 @@ const ProductDetails: React.FC = () => {
     {size: '3XL', bust: 46, waist: 44, hips: 50, length: 38, inseam: 50},
   ];
 
+  const buildShareUrl = async (productId: string) => {
+  // Generate deep link (not web URL)
+  return `trendrush://product/${productId}`;
+};
+
+const onShare = async () => {
+  if (!product) return;
+  const deepLink = await buildShareUrl(id);
+
+  // Prepare message — just the product name and deep link
+  const message = `${product.name}\n${deepLink}`;
+
+  try {
+    await Share.share({
+      message, // Android: this is shown and clickable
+      url: deepLink, // iOS: uses this if available
+      title: product.name,
+    });
+  } catch (err) {
+    console.error('Share error', err);
+  }
+};
+
+
   const fetchProductDetails = async () => {
     try {
       setLoading(true);
@@ -89,13 +119,8 @@ const ProductDetails: React.FC = () => {
 
   useEffect(() => {
     fetchProductDetails();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // const handleAddToCart = () => {
-  //   console.log('ck');
-  //   setShowSizeModal(true);
-  // };
   const handleAddToCart = async () => {
     if (!product) return;
     // If product has sizes, open modal first
@@ -199,9 +224,9 @@ const ProductDetails: React.FC = () => {
               console.error('❌ Error on back:', err);
             }
           }}
+          onShare={onShare}
         />
 
-        {/* Important: removeClippedSubviews={false} prevents native pre-removal during pop transitions */}
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: 100}}

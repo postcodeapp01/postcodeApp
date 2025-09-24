@@ -21,7 +21,7 @@ const CartStep: React.FC<CartStepProps> = ({
   onRemoveItem,
   onNext,
 }) => {
-  console.log(cartData)
+  // console.log("hiii",cartData)
   return (
     <View style={styles.container}>
       <FlatList

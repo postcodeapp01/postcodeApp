@@ -1,4 +1,3 @@
-// app/screens/ProfileScreen.tsx
 import React, {useEffect, useState} from 'react';
 import {
   View,
@@ -15,6 +14,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import axiosInstance from '../../config/Api';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../reduxSlices/UserSlice';
 
 type UserProfile = {
   name: string;
@@ -40,34 +41,32 @@ type MenuSection = {
 const ProfileScreen = ({navigation}: any) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const dispatch = useDispatch();
   const fetchProfile = async () => {
-  try {
-    const res = await axiosInstance.get('/user/profile');
-    const data = res.data.data;
-    console.log(data)
-    // map backend fields into your UserProfile type
-    const mappedProfile: UserProfile = {
-      name: data.name ?? 'Guest User', // fallback if null
-      phone: data.phone,
-      email: data.email,
-      gender: data.gender,       
-      avatar: data.avatar,               
-    };
-    console.log(mappedProfile)
-    setUserProfile(mappedProfile);
-  } catch (err) {
-    console.error('Profile fetch error:', err);
-    Alert.alert('Error', 'Failed to load profile');
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const res = await axiosInstance.get('/user/profile');
+      const data = res.data.data;
+      console.log(data);
+      const mappedProfile: UserProfile = {
+        name: data.name ?? 'Guest User', 
+        phone: data.phone,
+        email: data.email,
+        gender: data.gender,
+        avatar: data.avatar,
+      };
+      console.log(mappedProfile);
+      setUserProfile(mappedProfile);
+    } catch (err) {
+      console.error('Profile fetch error:', err);
+      Alert.alert('Error', 'Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchProfile();
-  },[])
-  // Main grouped menu sections (Orders, Offers, Earn)
+  }, []);
   const menuItems: MenuSection[] = [
     {
       id: 'orders',
@@ -97,8 +96,6 @@ const ProfileScreen = ({navigation}: any) => {
       ],
     },
   ];
-
-  // Separate final support section (About, Notifications, Help, Logout)
   const supportItems: MenuItem[] = [
     {id: 'about-us', title: 'About Us', icon: 'info-outline'},
     {
@@ -160,11 +157,8 @@ const ProfileScreen = ({navigation}: any) => {
         style: 'destructive',
         onPress: async () => {
           try {
-            await AsyncStorage.removeItem('userToken');
-            navigation.reset({
-              index: 0,
-              routes: [{name: 'Login'}],
-            });
+            await AsyncStorage.multiRemove(['accessToken', 'refreshToken']);
+            dispatch(logout());
           } catch (error) {
             console.error('Logout error:', error);
           }
@@ -237,7 +231,7 @@ const ProfileScreen = ({navigation}: any) => {
         color="#AAAAAA"
         style={styles.menuIcon}
       />
-      <Text style={styles.menuText}>Delivery Address</Text>
+      <Text style={styles.menuText}>Delivery Addresses</Text>
       <Icon name="keyboard-arrow-right" size={24} color="#94969F" />
     </TouchableOpacity>
   );
@@ -395,7 +389,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#FF5964',
-      // lineHeight: 20,
+    // lineHeight: 20,
   },
   userPhone: {
     fontSize: 12,
@@ -496,13 +490,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 2,
   },
-
-  // Menu Sections
   menuSection: {
     marginBottom: 8,
   },
-
-  // support block container to visually separate support items from others
   supportContainer: {
     marginTop: 8,
     backgroundColor: '#fff',
@@ -515,7 +505,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 0.1,
   },
-
   bottomSpacing: {
     height: 30,
   },

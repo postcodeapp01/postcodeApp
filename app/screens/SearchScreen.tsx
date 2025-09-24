@@ -285,138 +285,6 @@ const SearchScreen: React.FC = () => {
     );
   };
 
-  const SearchResultsView: React.FC = () => {
-    console.log("Entered int")
-    if (isSearching) {
-      return (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#ef4444" />
-        </View>
-      );
-    }
-
-    if (!hasResults) {
-      return (
-        <View style={styles.noResultsContainer}>
-          <Text style={styles.noResultsText}>
-            No results found for "{initialQuery}"
-          </Text>
-          <Text style={styles.noResultsSubText}>
-            Please check the spelling or try different keywords.
-          </Text>
-        </View>
-      );
-    }
-
-    return (
-      <ScrollView style={styles.resultsContainer} showsVerticalScrollIndicator={false}>
-        {/* Stores */}
-        {searchResults?.stores?.length > 0 && (
-          <View style={styles.resultSection}>
-            <Text style={styles.sectionTitle}>Stores</Text>
-            {searchResults.stores.map((store) => (
-              <TouchableOpacity key={store.store_id} style={styles.listItem}>
-                <Image
-                  source={{ uri: formatImageUrl(store.logo_url) }}
-                  style={styles.storeImage}
-                />
-                <View>
-                  <Text style={styles.boldText}>{store.name}</Text>
-                  <Text style={styles.subText}>{store.city}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Categories */}
-        {searchResults?.categories?.length > 0 && (
-          <View style={styles.resultSection}>
-            <Text style={styles.sectionTitle}>Categories</Text>
-            {searchResults.categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.listItem}
-                onPress={() =>
-                  navigation.navigate('Products', {
-                    level: 3,
-                    ids: category.id,
-                  })
-                }
-              >
-                {category.image ? (
-                  <Image
-                    source={{ uri: formatImageUrl(category.image) }}
-                    style={styles.categoryImage}
-                  />
-                ) : (
-                  <View style={styles.placeholderImage}>
-                    <Text style={styles.placeholderText}>#</Text>
-                  </View>
-                )}
-                <Text style={styles.boldText}>{category.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Products */}
-        {searchResults?.products?.length > 0 && (
-          <View style={styles.resultSection}>
-            <Text style={styles.sectionTitle}>Products</Text>
-            {searchResults.products.map((product) => (
-              <TouchableOpacity
-                key={product.product_id}
-                style={styles.listItem}
-                onPress={() =>
-                  navigation.navigate('ProductDetails', {
-                    id: product.product_id,
-                  })
-                }
-              >
-                <Image
-                  source={{ uri: formatImageUrl(product.image) }}
-                  style={styles.productImage}
-                />
-                <View style={styles.flexGrow}>
-                  <Text style={styles.boldText}>{product.title}</Text>
-                  <Text style={styles.subText}>{product.store_name}</Text>
-                  <Text style={styles.priceText}>${product.price}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Featured Products */}
-        {searchResults?.fproducts?.length > 0 && (
-          <View style={styles.resultSection}>
-            <Text style={styles.sectionTitle}>Featured Products</Text>
-            {searchResults.fproducts.map((product) => (
-              <TouchableOpacity
-                key={product.id}
-                style={styles.listItem}
-                onPress={() =>
-                  navigation.navigate('ProductDetails', {
-                    id: product.id,
-                  })
-                }
-              >
-                <Image
-                  source={{ uri: formatImageUrl(product.image) }}
-                  style={styles.productImage}
-                />
-                <View style={styles.flexGrow}>
-                  <Text style={styles.boldText}>{product.title}</Text>
-                  <Text style={styles.priceText}>${product.price}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </ScrollView>
-    );
-  };
 
   return (
     <KeyboardAvoidingView
@@ -484,7 +352,7 @@ const SearchScreen: React.FC = () => {
           {/* Main Content - only visible when overlay is not shown */}
           {!isOverlayVisible && (
             <View style={styles.mainContent}>
-              {initialQuery?.trim() ? <SearchResultsView /> : <RecentSearchesView />}
+              {!initialQuery?.trim()&& <RecentSearchesView />}
             </View>
           )}
         </View>
@@ -507,31 +375,28 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
     backgroundColor: '#fff',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+   
   },
   backButton: {
     padding: 4,
-    marginRight: 12,
+    marginRight: 4,
   },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F3F4F6',
-    borderRadius: 8,
+    borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    marginRight: 8,
   },
   searchIcon: {
     marginRight: 8,
@@ -559,11 +424,6 @@ const styles = StyleSheet.create({
     zIndex: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
   },
   mainContent: {
     flex: 1,

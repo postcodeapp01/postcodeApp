@@ -21,6 +21,7 @@ import ProductFilterBar from '../components/Products/ProductFilterBar';
 
 import {RootState} from '../../Store';
 import {useSelector} from 'react-redux';
+import LocationSelector from '../home/components/LocationSelector';
 
 type ProductsScreenRouteProp = RouteProp<HomeStackParamList, 'ProductsScreen'>;
 type ProductsScreenNavigationProp = NativeStackNavigationProp<
@@ -200,7 +201,7 @@ const ProductsScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
         productCount={products?.length}
       />
-
+      <LocationSelector/>
       <FlatList
         data={products}
         renderItem={renderProduct}
