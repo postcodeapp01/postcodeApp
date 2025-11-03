@@ -25,8 +25,13 @@ import axiosInstance from '../../config/Api';
 import {HomeStackParamList} from '../../navigators/stacks/HomeStack';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import AddToCartModal from '../components/ProductDetails/AddToCartModal';
+import { useDispatch } from 'react-redux';
+import { addItemToCart } from '../../reduxSlices/cartSlice';
+import StoreProducts from '../components/Cart/StoreProducts';
+import ProductsHeader from '../components/Products/ProductsHeader';
 
 interface Product {
+  id?: number;
   brand: string;
   name: string;
   rating: number;
@@ -40,6 +45,7 @@ interface Product {
   details: string[];
   description: string;
   sizeDetails?: string;
+  storeId?: number;
   reviewsData: {
     id: string;
     name: string;
@@ -70,7 +76,7 @@ const ProductDetails: React.FC = () => {
 
   const [showSizeModal, setShowSizeModal] = useState(false);
   const [tempSelectedSize, setTempSelectedSize] = useState<string | null>(null);
-
+  const dispatch = useDispatch();
   const dummySizeChart = [
     {size: 'XS', bust: 34, waist: 32, hips: 38, length: 38, inseam: 30},
     {size: 'S', bust: 36, waist: 34, hips: 40, length: 38, inseam: 40},
@@ -81,6 +87,20 @@ const ProductDetails: React.FC = () => {
     {size: '3XL', bust: 46, waist: 44, hips: 50, length: 38, inseam: 50},
   ];
 
+
+  // Full navigation state
+  const state = navigation.getState();
+  console.log('Full navigation state:', JSON.stringify(state, null, 2));
+
+  // Current stack's routes
+  const routes = state.routes;
+  console.log('Stack routes:', routes.map(r => r.name));
+
+  // Get previous route
+  const currentIndex = state.index;
+  const prevRoute = routes[currentIndex - 1];
+  console.log('Previous screen:', prevRoute?.name);
+
   const buildShareUrl = async (productId: string) => {
   // Generate deep link (not web URL)
   return `trendrush://product/${productId}`;
@@ -90,7 +110,6 @@ const onShare = async () => {
   if (!product) return;
   const deepLink = await buildShareUrl(id);
 
-  // Prepare message — just the product name and deep link
   const message = `${product.name}\n${deepLink}`;
 
   try {
@@ -109,6 +128,7 @@ const onShare = async () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get(`/products/${id}`);
+      console.log("Product details",response.data)
       setProduct(response.data);
     } catch (error) {
       console.error('Error fetching product details:', error);
@@ -121,48 +141,69 @@ const onShare = async () => {
     fetchProductDetails();
   }, []);
 
-  const handleAddToCart = async () => {
-    if (!product) return;
-    // If product has sizes, open modal first
-    if (product.sizes && product.sizes.length > 0) {
-      setShowSizeModal(true);
-    } else {
-      // Directly add to cart if no size selection required
-      try {
-        await axiosInstance.post('/cart', {
-          productId: id,
-          qty: 1,
-          size: null, // no size for this product
-        });
-        Alert.alert('Added to cart!');
-      } catch (err) {
-        console.error('❌ Failed to add to cart', err);
-        Alert.alert('Failed to add to cart');
-      }
-    }
-  };
+  
 
-  const confirmAddToCart = async () => {
-    if (!tempSelectedSize) {
-      Alert.alert('Please select a size');
-      return;
+const handleAddToCart = async () => {
+  if (!product) return;
+  if (product.sizes && product.sizes.length > 0) {
+    setShowSizeModal(true);
+    return;
+  }
+
+  try {
+    const payload = {
+      productId: id,
+      qty: 1,
+      size: null,
+    };
+
+    const resultAction = await dispatch(addItemToCart(payload) as any);
+    if (resultAction.error) {
+      throw new Error(resultAction.error?.message ?? 'Add failed');
     }
-    if (!product) return;
-    try {
-      await axiosInstance.post('/cart', {
-        productId: (product as any)._id || id,
-        size: tempSelectedSize,
-        qty: 1,
-        colorId: 1,
-      });
-      Alert.alert('Added to cart!');
-      setSelectedSize(tempSelectedSize);
-      setShowSizeModal(false);
-    } catch (err) {
-      console.error('Failed to add to cart', err);
-      Alert.alert('Failed to add to cart');
+
+    Alert.alert('Added to cart!');
+    // navigate back so CartScreen comes into view (it will re-fetch on focus)
+    navigation.goBack();
+  } catch (err) {
+    console.error('❌ Failed to add to cart', err);
+    Alert.alert('Failed to add to cart');
+  }
+};
+
+// for size modal confirm
+const confirmAddToCart = async () => {
+  if (!tempSelectedSize) {
+    Alert.alert('Please select a size');
+    return;
+  }
+  if (!product) return;
+
+  try {
+    const payload = {
+      productId: (product as any)._id || id,
+      qty: 1,
+      size: tempSelectedSize,
+      colorId: 1,
+    };
+
+    const resultAction = await dispatch(addItemToCart(payload) as any);
+    if (resultAction.error) {
+      throw new Error(resultAction.error?.message ?? 'Add failed');
     }
-  };
+
+    Alert.alert('Added to cart!');
+    setSelectedSize(tempSelectedSize);
+    setShowSizeModal(false);
+    navigation.goBack();
+  } catch (err) {
+    console.error('Failed to add to cart', err);
+    Alert.alert('Failed to add to cart');
+  }
+};
+
+
+
   const handleWishlistToggle = async () => {
     try {
       if (isWishlisted) {
@@ -174,6 +215,7 @@ const onShare = async () => {
         await axiosInstance.post(`/wishlist/`, {
           productId: id,
         });
+        Alert.alert('Added to wishlist!');
         setIsWishlisted(true);
       }
     } catch (error) {
@@ -187,7 +229,6 @@ const onShare = async () => {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" />
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#000" />
           <Text style={styles.loadingText}>Loading product...</Text>
@@ -199,33 +240,17 @@ const onShare = async () => {
   if (!product) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" />
         <View style={styles.loader}>
           <Text style={styles.loadingText}>Product not found.</Text>
         </View>
       </SafeAreaView>
     );
   }
-
+  console.log("product un detail",product)
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
       <View style={{flex: 1}}>
-        <ProductHeader
-          title="Max Fashion"
-          onBack={() => {
-            try {
-              if (navigation.canGoBack()) {
-                navigation.goBack();
-              } else {
-                navigation.navigate('HomeScreen' as never);
-              }
-            } catch (err) {
-              console.error('❌ Error on back:', err);
-            }
-          }}
-          onShare={onShare}
-        />
+        <ProductsHeader title={product.store.name} onBack={()=>navigation.goBack()}/>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -234,17 +259,18 @@ const onShare = async () => {
           keyboardShouldPersistTaps="handled">
           <ProductImageCarousel images={product.images || []} />
           <ProductInfo product={product} />
+          <ColorSelector
+            colors={product.colors || []}
+            selectedColor={selectedColor}
+            onSelectColor={setSelectedColor}
+          />
           <SizeSelector
             sizes={product.sizes || []}
             selectedSize={selectedSize}
             onSelectSize={setSelectedSize}
             sizeDetails={product.sizeDetails}
           />
-          <ColorSelector
-            colors={product.colors || []}
-            selectedColor={selectedColor}
-            onSelectColor={setSelectedColor}
-          />
+          
           <TabSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
           {activeTab === 'details' && (
             <ProductDescription
@@ -254,11 +280,10 @@ const onShare = async () => {
             />
           )}
           {activeTab === 'reviews' && (
-            // ReviewsComponent now renders plain Views (no FlatList) to avoid nested virtualization
             <ReviewsComponent reviews={product.reviewsData || []} />
           )}
+          <StoreProducts storeId={product.store.id} title="Similar Products" />
         </ScrollView>
-
         <ProductActionFooter
           price={product.price}
           onAddToCart={handleAddToCart}
@@ -271,7 +296,8 @@ const onShare = async () => {
           sizes={product.sizes || []}
           selectedSize={tempSelectedSize}
           onSelectSize={setTempSelectedSize}
-          onConfirm={confirmAddToCart}
+          // onConfirm={confirmAddToCart}
+          onConfirm={() => confirmAddToCart(tempSelectedSize)} 
           onClose={() => setShowSizeModal(false)}
           sizeChart={
             dummySizeChart /* array of SizeRow objects from backend (cm) */

@@ -17,7 +17,7 @@ const SizeSelector: React.FC<Props> = ({
   return (
     <View style={styles.outerContainer}>
       <View style={styles.wrapper}>
-        <Text style={styles.title}>Size: {selectedSize || '-'}</Text>
+        <Text style={styles.title}>Selected Size: {selectedSize || '-'}</Text>
         {
           <Text style={styles.details}>
             {sizeDetails || 'No size details available'}
@@ -52,36 +52,39 @@ export default SizeSelector;
 
 const styles = StyleSheet.create({
   outerContainer: {
-    height: 112,
-    paddingVertical: 10,
+    height: 100,
+    paddingVertical: 5,
     paddingHorizontal: 20,
-    gap: 10,
+    gap: 2,
     display: 'flex',
     justifyContent: 'center',
+    // backgroundColor: '#eccacaff',
   },
   wrapper: {
-    height: 76,
+    // height: 76,
   },
   title: {
     fontSize: 14,
     lineHeight: 20,
     letterSpacing: 0.1,
     fontWeight: '500',
-    color: '#000000',
+    color: '#222222',
   },
   details: {
-    fontSize: 12,
+    fontSize: 10,
+    fontWeight: '500',
     color: '#B1B1B1',
-    marginTop: 2,
+    lineHeight: 20,
+    letterSpacing: 0.1,
   },
   container: {
     flexDirection: 'row',
-    marginTop: 8,
+    // marginTop: 8,
   },
   sizeBox: {
-    minWidth: 40, // enough for XXL
+    minWidth: 40, 
     height: 30,
-    paddingHorizontal: 8,
+    // paddingHorizontal: 8,
     borderWidth: 1,
     borderColor: '#AAAAAA',
     marginRight: 10,
@@ -92,13 +95,13 @@ const styles = StyleSheet.create({
   sizeText: {
     fontSize: 12,
     lineHeight: 14,
-    color: '#000000',
+    color: '#222222',
     fontWeight: '500',
   },
 
   selectedSize: {
-    backgroundColor: '#FF5A5F',
-    borderColor: '#FF5A5F',
+    backgroundColor: '#FF5964',
+    borderColor: '#FF5964',
   },
   selectedText: {
     color: '#fff',

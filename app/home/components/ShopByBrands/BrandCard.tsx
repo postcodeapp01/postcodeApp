@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ImageSourcePropType,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface Brand {
   id: string;
@@ -21,31 +22,42 @@ interface BrandCardProps {
 const BrandCard: React.FC<BrandCardProps> = ({brand, onPress}) => {
   return (
     <TouchableOpacity style={styles.cardContainer} onPress={onPress}>
-      <View style={styles.card}>
-        <Image source={brand.logo} style={styles.logo} resizeMode="contain" />
-      </View>
+      <LinearGradient
+        colors={['#FF6B9D', '#306CFE']}
+        start={{x: 1, y: 0}}
+        end={{x: 1, y: 1}}
+        style={styles.gradientBorder}>
+        <View style={styles.card}>
+          <Image source={brand.logo} style={styles.logo} resizeMode="contain" />
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   cardContainer: {
-    marginHorizontal: 8,
+    marginLeft: 12,
   },
-  card: {
+  gradientBorder: {
     width: 86,
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#B1B1B1',
+    height: 49,
     borderRadius: 8,
+    padding: 2,
     justifyContent: 'center',
     alignItems: 'center',
-},
-logo: {
-    // borderRadius: 10,
-    // backgroundColor:'red',
-    width: 86,
-    height: 40,
+  },
+  card: {
+    width: 82,
+    height: 45,
+    borderRadius: 6,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 80,
+    height: 43,
   },
 });
 

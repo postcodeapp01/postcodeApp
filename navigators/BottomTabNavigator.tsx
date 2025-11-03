@@ -19,9 +19,6 @@ type BottomTabParamList = {
 };
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
-
-// Only these screens (inside each stack) will show the tab bar.
-// Replace names with your actual stack route names.
 const SHOW_TABS_WHITELIST: Record<keyof BottomTabParamList, string[]> = {
   HomeTab: ['HomeScreen'],
   StoresTab: ['Stores'],
@@ -33,10 +30,7 @@ function shouldHideTabBar(
   route: RouteProp<Record<string, object | undefined>, string> | undefined,
   whitelist: string[],
 ) {
-  // The currently focused screen in the child stack
   const focused = getFocusedRouteNameFromRoute(route ?? ({} as any));
-  // console.log("ProfileTab focused route:", focused);
-  // When stack just mounts, focused is undefined; assume first whitelisted (root) is active
   const current = focused ?? whitelist[0];
   return !whitelist.includes(current);
 }
@@ -55,7 +49,6 @@ export default function BottomTabNavigator() {
         name="HomeTab"
         component={HomeStack}
         options={({route}) => ({
-          // Hide tab bar if child route is NOT in whitelist
           tabBarStyle: shouldHideTabBar(route, SHOW_TABS_WHITELIST.HomeTab)
             ? {display: 'none'}
             : undefined,

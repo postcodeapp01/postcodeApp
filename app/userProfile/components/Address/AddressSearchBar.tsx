@@ -12,7 +12,8 @@ interface AddressSearchBarProps {
   onSearchChange: (query: string) => void;
   placeholder?: string;
   style?: any;
-  debounceMs?: number; // optional, defaults to 800ms
+  debounceMs?: number; 
+  onBack: () => void;
 }
 
 const AddressSearchBar: React.FC<AddressSearchBarProps> = memo(({
@@ -21,19 +22,17 @@ const AddressSearchBar: React.FC<AddressSearchBarProps> = memo(({
   placeholder = "Search addresses...",
   style,
   debounceMs = 800,
+  onBack,
 }) => {
-  // local state so typing feels instant
   const [localQuery, setLocalQuery] = useState<string>(searchQuery ?? '');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // keep local in sync when parent explicitly changes searchQuery
   useEffect(() => {
     if (searchQuery !== localQuery) {
       setLocalQuery(searchQuery ?? '');
     }
   }, [searchQuery]);
 
-  // cleanup timer on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -61,30 +60,33 @@ const AddressSearchBar: React.FC<AddressSearchBarProps> = memo(({
   }, [onSearchChange, debounceMs]);
 
   const handleTextChange = useCallback((text: string) => {
-    // update local immediately so input is smooth
     setLocalQuery(text);
-    // inform parent only after debounce
     triggerParentChange(text);
   }, [triggerParentChange]);
 
   const clearSearch = useCallback(() => {
     setLocalQuery('');
-    // clear immediately in parent (so overlays/list clear quickly)
     triggerParentChange('', true);
   }, [triggerParentChange]);
 
   return (
+    <View style={styles.header}>
+      <TouchableOpacity  onPress={onBack}>
+              <View style={styles.circleButton}>
+      
+              <Icon name="arrow-back" size={22} color="#000" />
+              </View>
+            </TouchableOpacity>
     <View style={[styles.container, style]}>
-      <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+      <Icon name="search" size={20} color="#AAAAAA" style={styles.searchIcon} />
       <TextInput
         style={styles.input}
         value={localQuery}
         onChangeText={handleTextChange}
         placeholder={placeholder}
-        placeholderTextColor="#999"
+        placeholderTextColor="#AAAAAA"
         autoCapitalize="none"
         autoCorrect={false}
-        // keep default keyboard behaviour
       />
       {localQuery.length > 0 && (
         <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
@@ -92,35 +94,73 @@ const AddressSearchBar: React.FC<AddressSearchBarProps> = memo(({
         </TouchableOpacity>
       )}
     </View>
+    </View>
   );
 });
 
 AddressSearchBar.displayName = 'AddressSearchBar';
 
+
 const styles = StyleSheet.create({
-  container: {
+  header: {
+    height: 55, // exact header height preserved
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F8F8',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    paddingHorizontal: 20, // smaller horizontal padding to give room
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.9,
+    shadowRadius: 4,
+    elevation: 4,
   },
+
+  circleButton: {
+    width: 35,
+    height: 35,
+    borderRadius: 18,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 36, 
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    marginLeft: 12,
+    borderWidth: 1,
+    borderColor: '#AAAAAA',
+  },
+
   searchIcon: {
+
     marginRight: 8,
   },
+
   input: {
     flex: 1,
     fontSize: 14,
     color: '#333',
-    paddingVertical: 4,
+    paddingVertical: 6,
+    backgroundColor:'#fff',
   },
+
   clearButton: {
-    padding: 2,
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

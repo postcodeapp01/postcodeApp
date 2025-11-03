@@ -19,15 +19,15 @@ export default UseMyLocationButton;
 
 const styles = StyleSheet.create({
   outer: {
-    paddingHorizontal: 16,
-    marginTop: 12,
+    paddingHorizontal: 8,
+    marginVertical: 12,
   },
   button: {
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#007BFF',
+    backgroundColor: '#FF5964',
   },
   buttonText: {
     color: '#fff',

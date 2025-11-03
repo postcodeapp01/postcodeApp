@@ -48,7 +48,7 @@ const PaymentSuccessScreen: React.FC = () => {
   );
   const handleStarPress = (starIndex: number) => setRating(starIndex + 1);
 
-  const handleContinueShopping = () => navigation.navigate('Home' as never);
+  const handleContinueShopping = () => navigation.navigate('HomeScreen' as never);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -92,7 +92,7 @@ const PaymentSuccessScreen: React.FC = () => {
         {/* ✅ Order Items */}
         <View style={styles.orderSection}>
           {orderItems.map(item => (
-            <View key={item.productId} style={styles.orderItem}>
+            <View key={item.product_id} style={styles.orderItem}>
               <View style={styles.deliveryHeader}>
                 <Text style={styles.deliveryText}>
                   Delivery Expected in{' '}

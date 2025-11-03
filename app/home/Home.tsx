@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,12 @@ import {KidsSection} from '../screens/KidsSection';
 import {WomenSection} from '../screens/WomenSection';
 import {MenSection} from '../screens/MenSection';
 import DeliveryNearYouComponent from './components/DeliveryNearYou';
+import {useSelector} from 'react-redux';
+import {RootState} from '../../Store';
+import BestSellers from './components/BestSellers/BestSellers';
+import { StoreRecommendation } from './components/Recommendations/StoreRecommendationCard';
+import RecommendedForYou from './components/Recommendations/RecommendedForYou';
+import CartIcon from '../common/CartIcon';
 
 type NavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -28,26 +34,50 @@ type NavigationProp = NativeStackNavigationProp<
 
 export default function Home() {
   const navigation = useNavigation<NavigationProp>();
-  const [activeCategory, setActiveCategory] = useState<number | null>(null); // NEW
-
-  // Callback when a category is clicked in PickByCategory
+   const [recommendedStores, setRecommendedStores] = useState<StoreRecommendation[]>([]);
+  const [activeCategory, setActiveCategory] = useState<number | null>(null);
+  const user = useSelector((state: RootState) => state.user.userDetails);
+  useEffect(() => {
+    const sampleStores: StoreRecommendation[] = [
+      {
+        id: '1',
+        name: 'Max',
+        category: 'Fashion',
+        image: 'https://res.cloudinary.com/dy6bwdhet/image/upload/v1761393207/Frame_1000002839_vesfhj.png',
+        distance: '1 km',
+        deliveryTime: '45-50 Mins',
+        rating: 4.3,
+        reviewCount: '2k+ ratings',
+        discount: 'UPTO 35% OFF',
+      },
+      {
+        id: '2',
+        name: 'Centro',
+        category: 'FootWear',
+        image: 'https://res.cloudinary.com/dy6bwdhet/image/upload/v1761393207/Frame_1000002839_vesfhj.png',
+        distance: '1 km',
+        deliveryTime: '45-50 Mins',
+        rating: 4.3,
+        reviewCount: '3k+ ratings',
+        discount: 'UPTO 18% OFF',
+      },
+      // Add more stores
+    ];  setRecommendedStores(sampleStores);
+  }, []);
   const handleCategoryPress = (categoryId: number) => {
     if (categoryId === 65) {
       navigation.navigate('MoreScreen');
     } else if (categoryId === -1) {
-      // "All" clicked → reset to Home page
       setActiveCategory(null);
     } else {
       setActiveCategory(categoryId);
     }
   };
   const handleSeeAll = () => {
-    // Navigate to all stores screen
     console.log('See all stores');
   };
 
   const handleStorePress = (store: any) => {
-    // Navigate to store details
     console.log('Store pressed:', store.name);
   };
 
@@ -56,10 +86,7 @@ export default function Home() {
       <ScrollView
         style={homeStyles.homeContainer}
         showsVerticalScrollIndicator={false}>
-        {/* Always visible */}
-        <LocationSelector />
-
-        {/* Search + right-side icons */}
+        <LocationSelector showBanner={true} />
         <View style={styles.topRow}>
           <TouchableOpacity
             style={styles.searchBar}
@@ -70,53 +97,56 @@ export default function Home() {
               color="#AAAAAA"
               style={{marginRight: 13.5}}
             />
-            <Text style={styles.searchText}>Search</Text>
+            <Text style={styles.searchText}>Search by store, product, ca...</Text>
           </TouchableOpacity>
-
+          {/* icons  */}
           <View style={styles.rightIcons}>
             <TouchableOpacity
               onPress={() => navigation.navigate('NotificationsScreen')}
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
               style={styles.iconButton}>
-              <Ionicons
-                name="notifications-outline"
-                size={22}
-                color="#AAAAAA"
-              />
+              <View style={styles.circleButton}>
+                <Ionicons name="notifications-outline" size={22} color="#222" />
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => navigation.navigate('WishlistScreen' as never)}
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
               style={styles.iconButton}>
-              <Ionicons name="heart-outline" size={22} color="#AAAAAA" />
+              <View style={styles.circleButton}>
+                <Ionicons name="heart-outline" size={22} color="#222" />
+              </View>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => navigation.navigate('CartScreen' as never)}
-              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
-              style={styles.iconButton}>
-              {/* Use 'bag-outline' or 'bag-handle-outline' based on your Ionicons version */}
-              <Ionicons name="bag-outline" size={22} color="#AAAAAA" />
-            </TouchableOpacity>
+            
+            <View style={styles.iconButton}>
+            <CartIcon size={22} color="#222" />
+          </View>
           </View>
         </View>
-
-        {/* Always visible categories */}
         <PickByCategory onCategoryPress={handleCategoryPress} />
 
-        {/* Conditional rendering of main section */}
         {activeCategory === null ? (
           <>
             {/* <ImageCarousel /> */}
-            <NearbyStores />
+            {user?.location?.lat && user?.location?.lng && (
+              <NearbyStores
+                latitude={user.location.lat}
+                longitude={user.location.lng}
+                distance={50}
+              />
+            )}
             <ShopByBrands />
-            <DeliveryNearYouComponent
+            <BestSellers />
+            {/* <DeliveryNearYouComponent
               onSeeAll={handleSeeAll}
               onStorePress={handleStorePress}
-            />
-            <ShopByBrands />
-            <ShopByBrands />
+            /> */}
+            <RecommendedForYou
+          stores={recommendedStores} 
+          onStorePress={handleStorePress} 
+        />
           </>
         ) : (
           <View>
@@ -141,19 +171,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    marginBottom: 6,
+    height: 60,
+    backgroundColor: '#fff',
   },
   searchBar: {
     flex: 1,
-    // width:240,
     backgroundColor: '#fff',
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#AAAAAA',
-    height: 34,
-    marginRight: 12, // space before the icons
+    height: 40,
+    marginRight: 12,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -166,6 +196,21 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     paddingHorizontal: 6,
+  },
+  circleButton: {
+    width: 35,
+    height: 35,
+    borderRadius: 18,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 6},
+    shadowOpacity: .25,
+    shadowRadius: 8,
+    elevation: 8,
   },
   backBtn: {
     flexDirection: 'row',

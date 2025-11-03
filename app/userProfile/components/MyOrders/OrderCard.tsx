@@ -48,7 +48,7 @@ const OrderCard: React.FC<Props> = ({ order, onTrackOrder, onReorder, onRateOrde
     <View style={styles.container}>
       {/* Product Info */}
       <View style={styles.productSection}>
-        <Image source={{ uri: order.imageUrl }} style={styles.productImage} />
+        <Image source={{ uri: order.imageUrl }} style={styles.productImage} defaultSource={require('../../../../sources/images/c1.png')}/>
         
         <View style={styles.productDetails}>
           <Text style={styles.brandName}>{order.brand}</Text>

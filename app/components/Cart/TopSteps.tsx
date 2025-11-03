@@ -1,48 +1,68 @@
-// src/components/cart/TopSteps.tsx
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 interface Props {
-  activeIndex?: number; // 0 = My Cart, 1 = Review, 2 = Payment, 3 = Track
+  activeIndex?: number; 
+  totalSteps?: number;
 }
 
 const steps = [
-  {label: 'My Cart', icon: <FontAwesome5 name="shopping-cart" size={18} />},
-  {label: 'Review', icon: <MaterialIcons name="credit-card" size={18} />},
-  {
-    label: 'Payment',
-    icon: <MaterialCommunityIcons name="credit-card-outline" size={18} />,
-  },
-  {
-    label: 'Track',
-    icon: <MaterialCommunityIcons name="truck-delivery" size={18} />,
-  },
+  {label: 'My Cart'},
+  {label: 'Checkout'},
+  {label: 'Review'},
+  {label: 'Payment'},
+  {label: 'Track'},
 ];
 
-const TopSteps: React.FC<Props> = ({activeIndex = 0}) => {
+const TopSteps: React.FC<Props> = ({activeIndex = 0, totalSteps = 4}) => {
   return (
-    <View style={styles.row}>
-      {steps.map((s, i) => {
-        const active = i <= activeIndex;
-        return (
-          <View key={s.label} style={styles.step}>
-            <View style={[styles.circle, active && styles.activeCircle]}>
-              {React.cloneElement(s.icon, {
-                color: active ? '#fff' : '#000',
-              })}
-            </View>
-            <Text style={[styles.label, active && styles.activeLabel]}>
-              {s.label}
-            </Text>
-            {i < steps.length - 1 && (
-              <View style={[styles.sep, active && styles.activeSep]} />
-            )}
-          </View>
-        );
-      })}
+    <View style={styles.container}>
+      <View style={styles.stepsRow}>
+        {steps.map((step, index) => {
+          const isActive = index === activeIndex;
+          const isCompleted = index < activeIndex;
+
+          return (
+            <React.Fragment key={step.label}>
+              <View style={styles.stepContainer}>
+                {/* Step Circle with Checkmark */}
+                <View
+                  style={[
+                    styles.circle,
+                    (isActive || isCompleted) && styles.activeCircle,
+                  ]}>
+                  <MaterialIcons
+                    name="check"
+                    size={12} 
+                    color={isActive || isCompleted ? '#fff' : '#D0D0D0'}
+                    style={{transform: [{scaleX: 1.8}, {scaleY: 1.8}]}}
+                  />
+                </View>
+
+                {/* Step Label */}
+                <Text
+                  style={[
+                    styles.label,
+                    (isActive || isCompleted) && styles.activeLabel,
+                  ]}>
+                  {step.label}
+                </Text>
+              </View>
+
+              {/* Connector Line */}
+              {index < steps.length - 1 && (
+                <View
+                  style={[
+                    styles.connector,
+                    isCompleted && styles.activeConnector,
+                  ]}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </View>
     </View>
   );
 };
@@ -50,52 +70,52 @@ const TopSteps: React.FC<Props> = ({activeIndex = 0}) => {
 export default TopSteps;
 
 const styles = StyleSheet.create({
-  row: {
+  container: {
+    backgroundColor: '#F1F1F1',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8E8E8',
+    height: 67,
+  },
+  stepsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    paddingVertical:10,
-    backgroundColor:'#fff',
-    height: 80,
   },
-  step: {
+  stepContainer: {
     alignItems: 'center',
-    width: '25%',
-    position: 'relative',
+    flex: 1,
   },
   circle: {
-    width: 40,
-    height: 40,
-    borderRadius: 50,
-    backgroundColor: '#EEE',
+    width: 30,
+    height: 30,
+    borderRadius: 5,
+    backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 6,
   },
   activeCircle: {
-    backgroundColor: '#5B54E3',
+    backgroundColor: '#222222',
   },
   label: {
-    marginTop: 6,
-    fontSize: 10,
-    color: '#000',
+    fontSize: 9,
+    color: '#BDBDBD',
     textAlign: 'center',
-    lineHeight:20,
     fontWeight: '400',
   },
   activeLabel: {
-    color: '#5B54E3',
-    fontWeight: '500',
+    color: '#2C2C2C',
+    fontWeight: '600',
   },
-  sep: {
-    position: 'absolute',
-    right: -33,
-    top: 18,
-    height: 2,
-    width: 66,
-    backgroundColor: '#E6E6E6',
+  connector: {
+    height: 1,
+    flex: 0.8,
+    backgroundColor: '#B1B1B1',
+    marginBottom: 20,
+    width: '100%',
   },
-  activeSep: {
-    backgroundColor: '#5B54E3',
+  activeConnector: {
+    backgroundColor: '#000',
   },
 });

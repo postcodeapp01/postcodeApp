@@ -32,11 +32,11 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           </View>
         </TouchableOpacity>
 
-        <View style={styles.divider} />
+        {/* <View style={styles.divider} /> */}
 
-        <TouchableOpacity style={styles.item} onPress={() => setCategoryVisible(true)}>
+        {/* <TouchableOpacity style={styles.item} onPress={() => setCategoryVisible(true)}>
           <Text style={[styles.text, styles.bold]}>Category</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.divider} />
 
@@ -65,7 +65,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
         onClose={() => setCategoryVisible(false)}
         onApply={selectedCategories => {
           setCategoryVisible(false);
-          console.log("Category  modal",selectedCategories);
+          console.log('Category  modal', selectedCategories);
           onFilter(selectedCategories); // send filters to parent
         }}
       />
@@ -89,8 +89,8 @@ export default ProductFilterBar;
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#FF4C5E',
-    height: 60,
+    backgroundColor: '#FF5964',
+    height: 65,
     alignItems: 'center',
     justifyContent: 'space-around',
   },
@@ -104,19 +104,14 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#fff',
-    fontSize: 14,
-  },
-  subText: {
-    color: '#fff',
-    fontSize: 11,
-    opacity: 0.8,
-  },
-  bold: {
+    fontSize: 16,
     fontWeight: '600',
+    lineHeight: 20,
+    letterSpacing: 0.1,
   },
   divider: {
-    width: 1,
-    height: 25,
+    width: 2,
+    height: 30,
     backgroundColor: '#fff',
     opacity: 0.6,
   },

@@ -13,6 +13,7 @@ import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {RootState} from '../../Store';
 import OnlyForYouSection from '../components/Men/OnlyForYouSection';
 import FestivalOffersSection from '../components/Men/FestiveSection';
+import CategoriesScroll from '../common/CategoriesScroll';
 
 type SectionProps = {parentId: number};
 
@@ -27,7 +28,6 @@ export const MenSection: React.FC<SectionProps> = ({parentId}) => {
   );
 
   const handlePress = (sub: any) => {
-    // check if there are level-3 children for this subcategory
     const hasThirdLevel = categories.some(
       (c: any) => c.parent_id === sub.id && c.level === 3,
     );
@@ -38,7 +38,6 @@ export const MenSection: React.FC<SectionProps> = ({parentId}) => {
         image: sub.image,
       });
     } else {
-      // no deeper categories -> go straight to product listing
       navigation.navigate('ProductsScreen', {id: sub.id});
     }
   };
@@ -46,40 +45,18 @@ export const MenSection: React.FC<SectionProps> = ({parentId}) => {
   return (
     <View style={styles.sectionContainer}>
       {subCategories.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.secondscrollRow}>
-          {subCategories.map((sub: any) => (
-            <TouchableOpacity
-              key={sub.id}
-              style={styles.subItem}
-              onPress={() => handlePress(sub)}>
-              <View style={styles.imageWrapper}>
-                <Image source={{uri: sub.image}} style={styles.subImage} />
-                <View style={styles.overlay}>
-                  <Text style={styles.subText}>{sub.name}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        
+        <CategoriesScroll
+    items={subCategories}
+    onItemPress={(sub) => handlePress(sub)}
+    backgroundColor="#C3D9F6"    
+  />
       )}
       <OnlyForYouSection/>
       <FestivalOffersSection/>
     </View>
   );
 };
-
-// const styles = StyleSheet.create({
-//   sectionContainer: { paddingVertical: 8 },
-//   secondscrollRow: { paddingHorizontal: 12 },
-//   subItem: { marginRight: 12 },
-//   imageWrapper: { width: 120, height: 160, borderRadius: 8, overflow: 'hidden' },
-//   subImage: { width: '100%', height: '100%' },
-//   overlay: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: 6, backgroundColor: 'rgba(0,0,0,0.35)' },
-//   subText: { color: '#fff', fontSize: 13 },
-// });
 
 const styles = StyleSheet.create({
   sectionContainer: {
@@ -92,26 +69,23 @@ const styles = StyleSheet.create({
   },
   banner: {
     width: '100%',
-    height: 150,
     marginBottom: 16,
     borderRadius: 8,
   },
   secondscrollRow: {
-    // backgroundColor: '#0cf53fff',
+    backgroundColor: '#C3D9F6',
     width: '100%',
-    height: 110,
-    left: 10,
+    height: 130,
+    paddingVertical: 10,
   },
   subItem: {
-    marginRight: 12,
+    marginLeft: 6,
     alignItems: 'center',
-    height: 111,
   },
   imageWrapper: {
     position: 'relative',
     width: 72,
-    height: 100,
-    // borderRadius: 10,
+    height: 110,
     borderTopEndRadius: 10,
     borderTopStartRadius: 10,
     overflow: 'hidden',
@@ -122,16 +96,18 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject, // fills entire image
+    ...StyleSheet.absoluteFillObject, 
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
   subText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
     width: '100%',
     fontSize: 10,
     textAlign: 'center',
     backgroundColor: '#9747FF',
+    lineHeight:20,
+    letterSpacing:-0.32,
   },
 });

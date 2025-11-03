@@ -1,7 +1,12 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../Store';
+import {
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+  PayloadAction,
+} from '@reduxjs/toolkit';
+import type {RootState} from '../Store';
 import axiosInstance from '../config/Api';
-import { calculateDistance } from '../app/common/utils/distanceCalculator';
+import {calculateDistance} from '../app/common/utils/distanceCalculator';
 
 export type Address = {
   id: string;
@@ -22,14 +27,12 @@ export type Address = {
 
 type AddressesState = {
   items: Address[];
-  defaultAddress: Address | null;
   loading: boolean;
   error: string | null;
 };
 
 const initialState: AddressesState = {
   items: [],
-  defaultAddress: null,
   loading: false,
   error: null,
 };
@@ -45,13 +48,21 @@ const normalizeAddress = (addr: any): Address => ({
   country: addr.country ?? '',
   pincode: addr.pincode ?? '',
   phone: addr.phone ?? '',
-  lat: addr.lat !== undefined && addr.lat !== null ? Number(addr.lat) : undefined,
-  lng: addr.lng !== undefined && addr.lng !== null ? Number(addr.lng) : undefined,
-  isDefault: false,
-  isSuggested: false,
+  lat:
+    addr.lat !== undefined && addr.lat !== null ? Number(addr.lat) : undefined,
+  lng:
+    addr.lng !== undefined && addr.lng !== null ? Number(addr.lng) : undefined,
+  // isDefault: false,
+  // isSuggested: false,
 });
 
-const coordsEqual = (aLat?: number, aLng?: number, bLat?: number, bLng?: number, tol = 1e-6) =>
+const coordsEqual = (
+  aLat?: number,
+  aLng?: number,
+  bLat?: number,
+  bLng?: number,
+  tol = 1e-6,
+) =>
   typeof aLat === 'number' &&
   typeof aLng === 'number' &&
   typeof bLat === 'number' &&
@@ -60,17 +71,17 @@ const coordsEqual = (aLat?: number, aLng?: number, bLat?: number, bLng?: number,
   Math.abs(aLng - bLng) < tol;
 
 export const fetchAddresses = createAsyncThunk<
-  { addresses: Address[]; defaultAddress: Address | null },
+  {addresses: Address[]; defaultAddress: Address | null},
   void,
-  { state: RootState }
->('addresses/fetchAll', async (_, { getState, rejectWithValue }) => {
+  {state: RootState}
+>('addresses/fetchAll', async (_, {getState, rejectWithValue}) => {
   try {
-    const { data } = await axiosInstance.get('/address');
+    const {data} = await axiosInstance.get('/address');
     let addresses: Address[] = Array.isArray(data?.address)
       ? data.address.map(normalizeAddress)
       : [];
 
-    const serverMarkedDefault = addresses.find((a) => !!a.isDefault);
+    const serverMarkedDefault = addresses.find(a => !!a.isDefault);
 
     const state = getState();
     const userLoc = state.user?.userDetails?.location;
@@ -92,31 +103,43 @@ export const fetchAddresses = createAsyncThunk<
     }
 
     const thresholdMeters = 50;
-    let nearest: { addr: Address; dist: number } | null = null;
+    let nearest: {addr: Address; dist: number} | null = null;
 
     for (const addr of addresses) {
       if (typeof addr.lat === 'number' && typeof addr.lng === 'number') {
         const dist = calculateDistance(addr.lat, addr.lng, userLat, userLng);
-        console.log(dist)
         if (!Number.isFinite(dist)) continue;
-        if (dist <= thresholdMeters && (nearest === null || dist < nearest.dist)) {
-          nearest = { addr, dist };
+
+        if (
+          dist <= thresholdMeters &&
+          (nearest === null || dist < nearest.dist)
+        ) {
+          nearest = {
+            addr: addr,
+            dist,
+          };
         }
       }
     }
 
     if (nearest) {
-      return {
-        addresses,
-        defaultAddress: nearest.addr,
-      };
+      addresses = addresses.map(a =>
+        a.id === nearest!.addr.id
+          ? {...a, isDefault: true, isSuggested: false}
+          : {...a, isDefault: false},
+      );
+
+      return {addresses};
     }
 
     try {
-      const { data: geocodeData } = await axiosInstance.post('/googlemaps/reverse-geocode', {
-        lat: userLat,
-        lng: userLng,
-      });
+      const {data: geocodeData} = await axiosInstance.post(
+        '/googlemaps/reverse-geocode',
+        {
+          lat: userLat,
+          lng: userLng,
+        },
+      );
 
       const suggested: Address = {
         id: `suggested-${Date.now()}`,
@@ -168,113 +191,164 @@ export const fetchAddresses = createAsyncThunk<
       };
     }
   } catch (err: any) {
-    return rejectWithValue(err?.response?.data?.message ?? err?.message ?? 'Failed to load addresses');
+    return rejectWithValue(
+      err?.response?.data?.message ??
+        err?.message ??
+        'Failed to load addresses',
+    );
   }
 });
 
-export const addAddress = createAsyncThunk<Address, Omit<Address, 'id'>, { state: RootState }>(
-  'addresses/add',
-  async (newAddress, { rejectWithValue }) => {
-    try {
-      const { data } = await axiosInstance.post('/address', newAddress);
-      return normalizeAddress(data);
-    } catch (err: any) {
-      return rejectWithValue(err?.response?.data?.message ?? err?.message ?? 'Failed to add address');
-    }
+export const addAddress = createAsyncThunk<
+  Address,
+  Omit<Address, 'id'>,
+  {state: RootState}
+>('addresses/add', async (newAddress, {rejectWithValue}) => {
+  try {
+    const {data} = await axiosInstance.post('/address', newAddress);
+    return normalizeAddress(data);
+  } catch (err: any) {
+    return rejectWithValue(
+      err?.response?.data?.message ?? err?.message ?? 'Failed to add address',
+    );
   }
-);
+});
 
-export const updateAddress = createAsyncThunk<Address, Address, { state: RootState }>(
-  'addresses/update',
-  async (address, { rejectWithValue }) => {
-    try {
-      const { data } = await axiosInstance.put(`/address/${address.id}`, address);
-      return normalizeAddress(data);
-    } catch (err: any) {
-      return rejectWithValue(err?.response?.data?.message ?? err?.message ?? 'Failed to update address');
-    }
+export const updateAddress = createAsyncThunk<
+  Address,
+  Address,
+  {state: RootState}
+>('addresses/update', async (address, {rejectWithValue}) => {
+  try {
+    const {data} = await axiosInstance.put(`/address/${address.id}`, address);
+    return normalizeAddress(data);
+  } catch (err: any) {
+    return rejectWithValue(
+      err?.response?.data?.message ??
+        err?.message ??
+        'Failed to update address',
+    );
   }
-);
+});
 
-export const deleteAddress = createAsyncThunk<string, string, { state: RootState }>(
-  'addresses/delete',
-  async (id, { rejectWithValue }) => {
-    try {
-      await axiosInstance.delete(`/address/${id}`);
-      return id;
-    } catch (err: any) {
-      return rejectWithValue(err?.response?.data?.message ?? err?.message ?? 'Failed to delete address');
-    }
+export const deleteAddress = createAsyncThunk<
+  string,
+  string,
+  {state: RootState}
+>('addresses/delete', async (id, {rejectWithValue}) => {
+  try {
+    await axiosInstance.delete(`/address/${id}`);
+    return id;
+  } catch (err: any) {
+    return rejectWithValue(
+      err?.response?.data?.message ??
+        err?.message ??
+        'Failed to delete address',
+    );
   }
-);
+});
 
 const addressesSlice = createSlice({
   name: 'addresses',
   initialState,
   reducers: {
-    setDefaultAddress: (state, action: PayloadAction<Address | null>) => {
-      state.defaultAddress = action.payload;
+    setDefaultAddress: (
+      state,
+      action: PayloadAction<Address | string | null>,
+    ) => {
+      const payload = action.payload;
+      if (!payload) {
+        state.items = state.items.map(a => ({...a, isDefault: false}));
+        return;
+      }
+      const newId =
+        typeof payload === 'string' ? payload : String((payload as Address).id);
+      state.items = state.items.map(a => ({
+        ...a,
+        isDefault: String(a.id) === newId,
+      }));
     },
-    clearDefaultAddress: (state) => {
-      state.defaultAddress = null;
+    clearDefaultAddress: state => {
+      state.items = state.items.map(a => ({...a, isDefault: false}));
     },
   },
-  extraReducers: (builder) => {
-    builder.addCase(fetchAddresses.pending, (state) => {
+
+  extraReducers: builder => {
+    builder.addCase(fetchAddresses.pending, state => {
       state.loading = true;
       state.error = null;
     });
     builder.addCase(fetchAddresses.fulfilled, (state, action) => {
       state.loading = false;
-      state.items = action.payload.addresses;
-      state.defaultAddress = action.payload.defaultAddress;
+      const incoming = action.payload.addresses ?? [];
+
+      const incomingDefaultId = incoming.find(a => !!a.isDefault)?.id ?? null;
+      const existingDefaultId = state.items.find(a => a.isDefault)?.id ?? null;
+      const chosenDefaultId =
+        incomingDefaultId ?? existingDefaultId ?? incoming[0]?.id ?? null;
+
+      state.items = incoming.map(a => ({
+        ...a,
+        isDefault: chosenDefaultId
+          ? String(a.id) === String(chosenDefaultId)
+          : false,
+      }));
     });
+
     builder.addCase(fetchAddresses.rejected, (state, action) => {
       state.loading = false;
       state.error = (action.payload as string) ?? 'Failed to load addresses';
     });
 
-    builder.addCase(addAddress.fulfilled, (state, action: PayloadAction<Address>) => {
-      const newAddr = action.payload;
-      const suggestedIndex = state.items.findIndex(
-        (a) => a.id.startsWith('suggested-') && coordsEqual(a.lat, a.lng, newAddr.lat, newAddr.lng)
-      );
-      if (suggestedIndex !== -1) {
-        const suggested = state.items[suggestedIndex];
-        state.items.splice(suggestedIndex, 1);
-        if (state.defaultAddress?.id === suggested.id) {
-          state.defaultAddress = newAddr;
+    builder.addCase(
+      addAddress.fulfilled,
+      (state, action: PayloadAction<Address>) => {
+        const newAddr = action.payload;
+
+        const suggestedIndex = state.items.findIndex(
+          a =>
+            a.id.startsWith('suggested-') &&
+            coordsEqual(a.lat, a.lng, newAddr.lat, newAddr.lng),
+        );
+        if (suggestedIndex !== -1) {
+          state.items.splice(suggestedIndex, 1);
         }
-      }
-      state.items.push(newAddr);
-    });
+        if (newAddr.isDefault) {
+          state.items = state.items.map(a => ({...a, isDefault: false}));
+        }
 
-    builder.addCase(updateAddress.fulfilled, (state, action: PayloadAction<Address>) => {
-      const idx = state.items.findIndex((a) => a.id === action.payload.id);
-      if (idx !== -1) {
-        state.items[idx] = action.payload;
-      }
-      if (state.defaultAddress?.id === action.payload.id) {
-        state.defaultAddress = action.payload;
-      }
-    });
+        state.items.push(newAddr);
+      },
+    );
 
-    builder.addCase(deleteAddress.fulfilled, (state, action: PayloadAction<string>) => {
-      const deletedId = action.payload;
-      state.items = state.items.filter((a) => a.id !== deletedId);
-      if (state.defaultAddress?.id === deletedId) {
-        state.defaultAddress = state.items[0] ?? null;
-      }
-    });
+    builder.addCase(
+      updateAddress.fulfilled,
+      (state, action: PayloadAction<Address>) => {
+        const idx = state.items.findIndex(a => a.id === action.payload.id);
+        if (idx !== -1) {
+          if (action.payload.isDefault) {
+            state.items = state.items.map(a => ({...a, isDefault: false}));
+          }
+          state.items[idx] = action.payload;
+        }
+      },
+    );
+
+    builder.addCase(
+      deleteAddress.fulfilled,
+      (state, action: PayloadAction<string>) => {
+        state.items = state.items.filter(a => a.id !== action.payload);
+      },
+    );
   },
 });
 
 // ---------- Selectors ----------
 export const selectAllAddresses = (state: RootState) => state.addresses.items;
-export const selectDefaultAddress = (state: RootState) => state.addresses.defaultAddress;
-export const selectAddressById = (state: RootState, id: string | null) =>
-  state.addresses.items.find((a) => a.id === (id ?? '')) ?? null;
-console.log("in addressSlice",selectAddressById,selectDefaultAddress);
+export const selectDefaultAddress = createSelector(
+  (state: RootState) => state.addresses.items,
+  items => items.find(a => a.isDefault) ?? null,
+);
 // ---------- Exports ----------
-export const { setDefaultAddress, clearDefaultAddress } = addressesSlice.actions;
+export const {setDefaultAddress, clearDefaultAddress} = addressesSlice.actions;
 export default addressesSlice.reducer;

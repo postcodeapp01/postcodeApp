@@ -159,7 +159,8 @@
 
 
 
-import React, {useMemo, useState} from 'react';
+
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -167,78 +168,80 @@ import {
   StyleSheet,
   Image,
   useWindowDimensions,
-} from 'react-native';
-import {useSelector} from 'react-redux';
-import {RootState} from '../../../../Store';
-import {HomeStackParamList} from '../../../../navigators/stacks/HomeStack';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+} from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../../Store";
+import { HomeStackParamList } from "../../../../navigators/stacks/HomeStack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
-export default function PickByCategory({onCategoryPress}: any) {
-  // Redux categories (unchanged)
-  const {categories} = useSelector((state: RootState) => state.categories);
+export default function PickByCategory({ onCategoryPress }: any) {
+  const { categories } = useSelector((state: RootState) => state.categories);
   const navigation = useNavigation<NavigationProp>();
 
-  // Top-level categories (level === 1)
   const topCategories = useMemo(
     () => categories.filter((c: any) => c.level === 1),
-    [categories],
+    [categories]
   );
 
   const allCategory = {
     id: -1,
-    name: 'All',
+    name: "All",
     image:
-      'https://res.cloudinary.com/dy6bwdhet/image/upload/v1756704897/Rectangle_5379_fvvvlu.png',
+      "https://res.cloudinary.com/dy6bwdhet/image/upload/v1756704897/Rectangle_5379_fvvvlu.png",
     parent_id: 0,
     level: 0,
   };
   const displayCategories = [allCategory, ...topCategories];
 
-  // Selection state (unchanged)
   const [activeParentId, setActiveParentId] = useState<number>(allCategory.id);
 
-  // second-level children (kept for functionality)
   const subCategories = useMemo(
     () =>
       categories.filter(
-        (c: any) => c.parent_id === activeParentId && c.level === 2,
+        (c: any) => c.parent_id === activeParentId && c.level === 2
       ),
-    [categories, activeParentId],
+    [categories, activeParentId]
   );
 
-  // ---------------- Responsive (exact 5 slots) ----------------
-  const {width: screenWidth} = useWindowDimensions();
+  const { width: screenWidth } = useWindowDimensions();
 
-  const maxVisible = 5; // fixed requirement: exactly 5 slots
-  const paddingHorizontal = 12; // left & right breathing room
+  const maxVisible = 5;
+  const paddingHorizontal = 12;
   const gap = 12; // space between items
   const totalGap = gap * (maxVisible - 1);
   const totalPadding = paddingHorizontal * 2;
   const available = Math.max(screenWidth - totalPadding - totalGap, 0);
   const itemWidth = Math.floor(available / maxVisible);
-  const imageWidth = Math.round(itemWidth * 0.92);
-  const imageHeight = Math.round(itemWidth * 0.62);
+
+  // image sizes based on item width
+  const imageWidth = Math.round(itemWidth * 0.7); // use a fraction so it fits comfortably
+  const imageHeight = Math.round(itemWidth * 0.7);
   const underlineWidth = Math.round(itemWidth * 0.6);
-  const containerHeight = imageHeight + 46;
+  const containerHeight = imageHeight + 42; // image + texts + spacing
 
-  // Use only first 5 categories. If fewer, fill with invisible placeholders so layout stays fixed.
   const firstFive = displayCategories.slice(0, maxVisible);
-  const slots = Array.from({length: maxVisible}, (_, i) => firstFive[i] ?? null);
+  const slots = Array.from({ length: maxVisible }, (_, i) => firstFive[i] ?? null);
 
-  // ---------------- Render ----------------
   return (
-    <View style={[styles.container, {paddingHorizontal, height: containerHeight}]}>
-      <View style={styles.row}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingHorizontal,
+          height: containerHeight,
+        },
+      ]}
+    >
+      <View style={[styles.row]}>
         {slots.map((cat: any, idx: number) => {
           const isPlaceholder = cat === null;
           const isLast = idx === maxVisible - 1;
           const isActive = !isPlaceholder && activeParentId === cat.id;
 
           if (isPlaceholder) {
-            // Invisible slot to preserve layout
             return (
               <View
                 key={`ph-${idx}`}
@@ -248,6 +251,7 @@ export default function PickByCategory({onCategoryPress}: any) {
                     width: itemWidth,
                     marginRight: isLast ? 0 : gap,
                     opacity: 0,
+                    height: containerHeight,
                   },
                 ]}
               />
@@ -263,34 +267,39 @@ export default function PickByCategory({onCategoryPress}: any) {
                 {
                   width: itemWidth,
                   marginRight: isLast ? 0 : gap,
+                  height: containerHeight,
                 },
               ]}
               onPress={() => {
                 onCategoryPress(cat.id);
                 setActiveParentId(cat.id);
-              }}>
-              <Image
-                source={{uri: cat.image}}
-                style={[
-                  styles.topImage,
-                  {
-                    width: imageWidth,
-                    height: imageHeight,
-                    borderRadius: 8,
-                  },
-                ]}
-                resizeMode="cover"
-              />
+              }}
+            >
+              <View style={styles.imageWrapper}>
+                <Image
+                  source={{ uri: cat.image }}
+                  style={[
+                    styles.topImage,
+                    {
+                      width: imageWidth,
+                      height: imageHeight,
+                      borderRadius: Math.round(imageWidth / 2),
+                    },
+                  ]}
+                  resizeMode="cover"
+                />
+              </View>
 
               <Text
                 numberOfLines={1}
-                allowFontScaling={false} // prevents OS font scaling breaking layout
+                allowFontScaling={false}
                 ellipsizeMode="tail"
                 style={[
                   styles.topText,
                   isActive && styles.topTextActive,
-                  {width: imageWidth, marginTop: 6},
-                ]}>
+                  { width: itemWidth - 8, marginTop: 6 },
+                ]}
+              >
                 {cat.name}
               </Text>
 
@@ -316,39 +325,51 @@ export default function PickByCategory({onCategoryPress}: any) {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
-    marginBottom:-20,
+    backgroundColor: "#fff",
+    overflow: "hidden", 
+    borderColor: "#0c0b0bff",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
   },
   row: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start', 
-    height:60,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
   },
   topItem: {
-    alignItems: 'center',
-    paddingBottom: 10,
-    position: 'relative', 
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    paddingVertical: 6,
+  },
+  imageWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   topImage: {
-    resizeMode: 'cover',
+    resizeMode: "cover",
+    backgroundColor: "#F5F5F5",
   },
   topText: {
     fontSize: 12,
-    color: '#444',
-    textAlign: 'center',
+    color: "#444",
+    textAlign: "center",
   },
   topTextActive: {
-    color: '#FF4D4D',
-    fontWeight: '600',
+    color: "#FF4D4D",
+    fontWeight: "600",
   },
   underline: {
-    position: 'absolute',
-    bottom:100,
+    position: "absolute",
     height: 2,
-    backgroundColor: '#FF4D4D',
+    backgroundColor: "#FF4D4D",
     borderRadius: 1,
   },
 });
-

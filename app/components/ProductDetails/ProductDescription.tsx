@@ -26,7 +26,8 @@ export default ProductDescription;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   title: {
     lineHeight: 20,
@@ -42,18 +43,22 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 15,
     letterSpacing: 0.1,
-    color: '#8e8989ff',
+    color: '#636363',
   },
   detailHeading: {
     lineHeight: 20,
+    letterSpacing: 0.1,
     marginBottom: 10,
     fontSize: 16,
     fontWeight: '400',
     color: '#222222',
   },
-  detail: { fontSize: 14,
+  detail: {
+    fontSize: 14,
     fontWeight: '400',
     marginBottom: 4,
+    lineHeight: 20,
     letterSpacing: 0.1,
-    color: '#8e8989ff',},
+    color: '#8e8989ff',
+  },
 });

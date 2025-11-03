@@ -1,22 +1,26 @@
 import React from 'react';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import ProductCard from '../ProductCard';
-import {recommendedProducts} from './productData';
+import { useNavigation } from '@react-navigation/native';
 
-const RecommendedProducts: React.FC = () => {
+type RecommendedProductsProps = {
+  products?: any[]; 
+};
+
+const RecommendedProducts: React.FC<RecommendedProductsProps> = ({products}) => {
+  const navigation=useNavigation();
   const renderProduct = ({item, index}: {item: any; index: number}) => (
     <ProductCard
       product={item}
-      isLeftColumn={index % 2 === 0}
-      onPress={() => console.log(`Selected product: ${item.name}`)}
+      onPress={() => navigation.navigate('ProductDetails', {id: item.id, resetStack: true})}
     />
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Recommended For You</Text>
+      
       <FlatList
-        data={recommendedProducts}
+        data={products}
         renderItem={renderProduct}
         numColumns={2}
         scrollEnabled={false}
@@ -33,7 +37,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingVertical: 5,
   },
   sectionTitle: {
     fontSize: 18,

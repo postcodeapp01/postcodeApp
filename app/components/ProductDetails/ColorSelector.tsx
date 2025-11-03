@@ -2,7 +2,7 @@ import React from 'react';
 import {View, TouchableOpacity, Text, StyleSheet, Image} from 'react-native';
 
 interface Props {
-  colors: {name: string; image: string}[]; // color name + image URL
+  colors: {name: string; image: string}[]; 
   selectedColor: string;
   onSelectColor: (color: string) => void;
 }
@@ -12,9 +12,8 @@ const ColorSelector: React.FC<Props> = ({
   selectedColor,
   onSelectColor,
 }) => {
-  // Find selected color for label
   const selectedColorObj = colors.find(c => c.name === selectedColor);
-
+  console.log("",colors)
   return (
     <View style={styles.outerContainer}>
       <View style={styles.wrapper}>
@@ -25,9 +24,9 @@ const ColorSelector: React.FC<Props> = ({
 
         {/* Swatches */}
         <View style={styles.container}>
-          {colors.map(color => (
+          {colors.map((color,index) => (
             <TouchableOpacity
-              key={color.name}
+              key={`${color.name}_${index}`}
               style={[
                 styles.colorCircle,
                 selectedColor === color.name && styles.selectedBorder,
@@ -46,9 +45,10 @@ export default ColorSelector;
 
 const styles = StyleSheet.create({
   outerContainer: {
-    height: 85,
+    height: 130,
     paddingVertical: 10,
     paddingHorizontal: 20,
+    // backgroundColor:'#d9b3b3ff'
   },
   wrapper: {
     height: 65,
@@ -57,16 +57,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: '500',
-    marginBottom: 8,
+    marginBottom: 10,
+    color:'#222',
+    letterSpacing:0.1,
   },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   colorCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 80,
+    height: 80,
+    borderRadius: 50,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: 'transparent',
@@ -75,7 +77,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   selectedBorder: {
-    borderColor: 'red', // highlight color
+    borderColor: '#FF5964',
   },
   image: {
     width: '100%',

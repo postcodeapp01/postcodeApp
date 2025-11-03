@@ -7,14 +7,12 @@ import {
 } from 'react-native';
 
 interface CartSummaryProps {
-  total: number;
   buttonText: string;
   onConfirm: () => void;
   disabled?: boolean;
 }
 
 const CartSummary: React.FC<CartSummaryProps> = ({
-  total,
   buttonText,
   onConfirm,
   disabled = false,
@@ -29,9 +27,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({
         <Text style={[styles.buttonText, disabled && styles.disabledText]}>
           {buttonText}
         </Text>
-        {/* <Text style={[styles.totalText, disabled && styles.disabledText]}>
-          ₹ {total}
-        </Text> */}
       </TouchableOpacity>
     </View>
   );
@@ -46,9 +41,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    // paddingHorizontal: 16,
-    // paddingVertical: 12,
-    
+    padding:10,
    
   },
   confirmButton: {
@@ -58,7 +51,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 20,
-    // borderRadius: 8,
+    borderRadius: 8,
   },
   disabledButton: {
     backgroundColor: '#ccc',
@@ -66,14 +59,8 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  totalText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  disabledText: {
-    color: '#999',
+    fontWeight: '700',
+    lineHeight:20,
+    letterSpacing:0.1,
   },
 });

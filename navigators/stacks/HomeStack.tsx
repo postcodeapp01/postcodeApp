@@ -1,7 +1,6 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import HomeScreen from '../../app/home/Home';
-import HomeHeader from '../../app/home/header/HomeHeader';
 import SearchScreen from '../../app/screens/SearchScreen';
 import ProductDetails from '../../app/screens/ProductDetails';
 import AddAddress from '../../app/address/AddAddress';
@@ -15,7 +14,8 @@ import WishlistScreen from '../../app/userProfile/screens/WishlistScreen';
 import AddAddressScreen from '../../app/userProfile/screens/AddAddressScreen';
 import NotificationsScreen from '../../app/screens/NotifictionsScreen';
 import PaymentSuccessScreen from '../../app/components/Cart/PaymentSuccessPage';
-
+import PaymentScreen from '../../app/screens/PaymentScreen';
+import ViewMoreScreen from '../../app/screens/ViewMoreScreen';
 
 export type HomeStackParamList = {
   HomeScreen: undefined;
@@ -33,7 +33,16 @@ export type HomeStackParamList = {
   MoreScreen: undefined;
   WishlistScreen: undefined;
   NotificationsScreen: undefined;
-  PaymentSuccessScreen: undefined;
+  PaymentSuccessScreen: {
+    transactionId: string;
+    paymentMethod: string;
+    dateTime: string;
+    amount: number;
+    orderId: string;
+    orderItems: any[];
+  };
+  Payment: undefined;
+  ViewMoreScreen:any;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -49,28 +58,35 @@ export default function MyStack() {
           headerShown: false,
         }}
       />
-      
+
       <Stack.Screen
         name="MoreScreen"
         component={MoreScreen}
         options={{
-              headerShown: false,
-            }}
+          headerShown: false,
+        }}
       />
-          <Stack.Screen
-            name="CategoryScreen"
-            component={CategoryScreen}
-            options={{
-              headerShown: false,
-            }}
-          />
-        <Stack.Screen
-          name="StoreScreen"
-          component={StoreScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
+      <Stack.Screen
+        name="CategoryScreen"
+        component={CategoryScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="StoreScreen"
+        component={StoreScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Payment"
+        component={PaymentScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
       <Stack.Screen
         name="SearchScreen"
         component={SearchScreen}
@@ -89,6 +105,13 @@ export default function MyStack() {
       <Stack.Screen
         name="WishlistScreen"
         component={WishlistScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="ViewMoreScreen"
+        component={ViewMoreScreen}
         options={{
           headerShown: false,
         }}

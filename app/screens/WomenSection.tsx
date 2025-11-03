@@ -10,6 +10,7 @@ import {
 import {useSelector} from 'react-redux';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {RootState} from '../../Store';
+import CategoriesScroll from '../common/CategoriesScroll';
 
 type SectionProps = {
   parentId: number;
@@ -48,24 +49,12 @@ export const WomenSection: React.FC<SectionProps> = ({parentId}) => {
   return (
     <View style={styles.sectionContainer}>
       {subCategories.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.secondscrollRow}>
-          {subCategories.map((sub: any) => (
-            <TouchableOpacity
-              key={sub.id}
-              style={styles.subItem}
-              onPress={() => handlePress(sub)}>
-              <View style={styles.imageWrapper}>
-                <Image source={{uri: sub.image}} style={styles.subImage} />
-                <View style={styles.overlay}>
-                  <Text style={styles.subText}>{sub.name}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+       
+        <CategoriesScroll
+        items={subCategories}
+        onItemPress={(sub)=>handlePress(sub)}
+        backgroundColor='#F6C7CF'
+        />
       )}
     </View>
   );
@@ -86,40 +75,5 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 8,
   },
-  secondscrollRow: {
-    width: '100%',
-    height: 110,
-    left: 10,
-  },
-  subItem: {
-    marginRight: 12,
-    alignItems: 'center',
-    height: 111,
-  },
-  imageWrapper: {
-    position: 'relative',
-    width: 72,
-    height: 100,
-    borderTopEndRadius: 10,
-    borderTopStartRadius: 10,
-    overflow: 'hidden',
-  },
-  subImage: {
-    width: 72,
-    height: 100,
-    resizeMode: 'cover',
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  subText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    width: '100%',
-    fontSize: 10,
-    textAlign: 'center',
-    backgroundColor: '#9747FF',
-  },
+  
 });

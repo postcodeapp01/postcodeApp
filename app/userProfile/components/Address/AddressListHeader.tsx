@@ -1,12 +1,12 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-// import AddressSearchBar from '../../components/Address/AddressSearchBar';
-
+import {View, Text, StyleSheet, Alert} from 'react-native';
 import SuggestionsOverlay from './SuggestionsOverlay';
 import UseMyLocationButton from './UseMyLocationButton';
 import AddressCard from './AddressCard';
 import {Address} from './address';
 import AddressSearchBar from './AddressSearchBar';
+import LocationPermissionBanner from './LocationPermissionBanner';
+import { requestLocationPermission } from '../../../common/permissions/location';
 
 type DisplayAddresses = {
   default: Address | null;
@@ -23,6 +23,7 @@ type Props = {
   displayAddresses: DisplayAddresses;
   onEdit: (a: Address) => void;
   onDelete: (id: string) => void;
+  navigation: any;
 };
 
 const AddressListHeader: React.FC<Props> = ({
@@ -35,6 +36,7 @@ const AddressListHeader: React.FC<Props> = ({
   displayAddresses,
   onEdit,
   onDelete,
+  navigation,
 }) => {
   return (
     <View>
@@ -42,7 +44,8 @@ const AddressListHeader: React.FC<Props> = ({
       <AddressSearchBar
         searchQuery={searchQuery}
         onSearchChange={onSearchChange}
-        placeholder="Search your addresses..."
+        placeholder="Search address..."
+        onBack={()=>navigation.goBack()}
       />
 
       {/* Suggestions overlay (appears under the search bar inside the header) */}
@@ -52,14 +55,22 @@ const AddressListHeader: React.FC<Props> = ({
           onSuggestionPress={onSuggestionPress}
         />
       )}
-
+      <LocationPermissionBanner
+      onEnable={() => {
+        requestLocationPermission().then(granted => {
+          if (!granted) {
+            Alert.alert('Permission denied', 'Please enable location manually in settings');
+          }
+        });
+      }}
+    />
       {/* NEW: Use My Location Button */}
       <UseMyLocationButton onPress={onUseMyLocationPress} />
 
       {/* Default Address Section */}
       {displayAddresses.default && (
         <View style={styles.section}>
-          {/* <Text style={styles.sectionTitle}>Default Address</Text> */}
+      
           <AddressCard
             address={displayAddresses.default}
             isDefault
@@ -67,12 +78,12 @@ const AddressListHeader: React.FC<Props> = ({
             onDelete={onDelete}
             showMarkDefault={false}
           />
-          {/* <Text style={styles.sectionTitle2}>All addresses</Text> */}
+          
         </View>
       )}
 
       {!displayAddresses.default && (
-        <Text style={styles.sectionTitle2}>All addresses</Text>
+        <Text style={styles.sectionTitle2}>Select a Delivery Address</Text>
       )}
     </View>
   );
@@ -82,7 +93,7 @@ export default AddressListHeader;
 
 const styles = StyleSheet.create({
   section: {
-    // backgroundColor:"#6c3636ff",
+    backgroundColor:"#6c3636ff",
     marginTop: 8,
   },
   sectionTitle: {
@@ -92,10 +103,12 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   sectionTitle2: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 14,
     fontSize: 16,
     fontWeight: '500',
-    color: '#000',
+    color: '#222',
     marginBottom: 10,
+    lineHeight: 20,
+    letterSpacing: 0.1,
   },
 });

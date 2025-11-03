@@ -27,18 +27,20 @@ const ShopByBrands: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',  
-    height: 80,
-    marginTop: 5,
-    left: 17,
+    height: 95,
+  //  paddingHorizontal: 4,
   },
   title: {
+    top:5,
     fontSize: 16,
     fontWeight: '500',
     color: '#000',
     marginBottom: 15,
+    paddingHorizontal:10,
+    letterSpacing:.5,
+    left: 4,
   },
   scrollContainer: {
-    left: -8,
   },
   brandSpacing: {
     marginRight: -8,

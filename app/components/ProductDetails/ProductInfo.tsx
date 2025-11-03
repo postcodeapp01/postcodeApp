@@ -18,17 +18,23 @@ interface Props {
 
 const ProductInfo: React.FC<Props> = ({product}) => {
   return (
-    <View style={styles.outerContainer}>
+    <View>
+      <View style={styles.storeContainer}>
+        <Text style={styles.storeName}>{product.store.name}</Text>
+        <Text style={styles.storeLocation}>{product.store.location}</Text>
+      </View>
       <View style={styles.container}>
         <Text style={styles.brand}>{product.brand}</Text>
         <Text style={styles.name}>{product.name}</Text>
-        {RenderStars(product.rating)}
-        {/* <View style={styles.ratingContainer}>
-        </View> */}
+        {/* {RenderStars(product.rating)} */}
         <View style={styles.priceContainer}>
           <Text style={styles.price}>₹ {product.price}</Text>
           <Text style={styles.oldPrice}>₹ {product.oldPrice}</Text>
           <Text style={styles.discount}>{product.discount}% OFF</Text>
+        </View>
+        <View style={styles.ratingContainer}>
+          <Icon name="star" size={14} color="#F4B400" />
+          <Text style={styles.ratingText}>{product.rating} (2k+ ratings)</Text>
         </View>
       </View>
     </View>
@@ -38,57 +44,83 @@ const ProductInfo: React.FC<Props> = ({product}) => {
 export default ProductInfo;
 
 const styles = StyleSheet.create({
-  outerContainer: {
+  storeContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    height: 93,
+    paddingVertical: 5,
+    backgroundColor: '#DDCF82',
+  },
+  storeName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#222222',
+    lineHeight: 15,
+    letterSpacing: 0.1,
+  },
+  storeLocation: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#222222',
+    lineHeight: 15,
+    letterSpacing: 0.1,
   },
   container: {
-    backgroundColor: '#fff',
-    height: 73,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   brand: {
     fontSize: 16,
-    marginBottom: -4,
-    color: '#000000',
-    fontWeight: '500',
-    letterSpacing: 0.1,
-    lineHeight: 20,
+    color: '#222',
+    fontWeight: '600',
+    letterSpacing: -0.32,
+    lineHeight: 15,
   },
   name: {
-    marginBottom: -2,
-    fontSize: 12,
-    lineHeight: 20,
+    fontSize: 14,
+    lineHeight: 15,
     letterSpacing: 0.1,
-    color: '#AAAAAA',
-    marginVertical: 4,
+    color: '#636363',
   },
-  ratingContainer: {
-    marginBottom: -4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 2,
-  },
+
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 5,
+    paddingHorizontal: 3,
   },
   price: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: '600',
     color: '#222222',
     marginRight: 8,
+    lineHeight: 15,
+    letterSpacing: 0.1,
   },
   oldPrice: {
-    fontSize: 14,
-    color: '#AAAAAA',
+    fontSize: 12,
+    color: '#636363',
     textDecorationLine: 'line-through',
     marginRight: 6,
+    lineHeight: 15,
+    letterSpacing: 0.1,
+    fontWeight: '600',
   },
   discount: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#B51C0F',
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FF5964',
+    lineHeight: 15,
+    letterSpacing: 0.1,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop:5,
+  },
+  ratingText: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#636363',
+    letterSpacing: 0.1,
   },
 });

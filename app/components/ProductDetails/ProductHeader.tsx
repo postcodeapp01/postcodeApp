@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/Feather"; // For arrow-left, share, shopping-bag
 import AntIcon from "react-native-vector-icons/AntDesign"; // For hearto
+import CartIcon from "../../common/CartIcon";
 
 interface Props {
   title: string;
@@ -48,9 +49,12 @@ const ProductHeader: React.FC<Props> = ({
         </TouchableOpacity>
 
         {/* Cart */}
-        <TouchableOpacity onPress={onCart} style={styles.iconButton}>
+        {/* <TouchableOpacity onPress={onCart} style={styles.iconButton}>
           <Icon name="shopping-bag" size={20} color="#AAAAAA" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <View style={styles.iconButton}>
+            <CartIcon size={17} color="#222" />
+          </View>
       </View>
     </View>
   );

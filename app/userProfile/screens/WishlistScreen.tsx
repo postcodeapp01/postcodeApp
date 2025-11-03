@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import WishlistProductCard from '../components/Wishlist/WishlistProductCard';
 import axiosInstance from '../../../config/Api';
 import AddToCartModal from '../../components/ProductDetails/AddToCartModal';
-
+import HeaderWithNoIcons from '../components/Profile/HeaderWithNoIcons';
 
 const screenWidth = Dimensions.get('window').width;
 const H_PADDING = 16; // screen horizontal padding
@@ -120,7 +120,6 @@ const WishlistScreen: React.FC<Props> = ({navigation}) => {
       onRemove={() => handleRemoveFromWishlist(item.id)}
       onAddToCart={() => handleAddToCart(item)}
       onPress={() => handleProductPress(item)}
-      // isLeftColumn={index % 2 === 0}
       width={CARD_WIDTH}
     />
   );
@@ -143,20 +142,8 @@ const WishlistScreen: React.FC<Props> = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => {
-            InteractionManager.runAfterInteractions(() => {
-              navigation.goBack();
-            });
-          }}>
-          <Icon name="arrow-back" size={24} color="#282C3F" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Wishlist</Text>
-        <View style={styles.placeholder} />
-      </View>
 
+      <HeaderWithNoIcons title="Wishlist" onBack={() => navigation.goBack()} navigation={navigation} showCart={true}/>
       {/* Wishlist Items */}
       {wishlistItems.length > 0 ? (
         <FlatList
@@ -203,8 +190,8 @@ const WishlistScreen: React.FC<Props> = ({navigation}) => {
           setSelectedProduct(null);
           setSelectedSize(null);
         }}
-        sizeChart={undefined} // can pass if you fetch from API
-        guideImage={undefined} // can pass product-specific guide if available
+        sizeChart={undefined} 
+        guideImage={undefined} 
         fitNotes={selectedProduct?.fitNotes}
       />
     </SafeAreaView>
@@ -218,33 +205,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    // paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#282C3F',
-  },
-  placeholder: {
-    width: 40,
-  },
-
-  // List
   listContent: {
-    paddingHorizontal:H_PADDING,
+    paddingHorizontal: H_PADDING,
     paddingTop: 8,
     paddingBottom: 24,
   },
@@ -254,8 +216,6 @@ const styles = StyleSheet.create({
   itemSeparator: {
     height: 16,
   },
-
-  // Empty State
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',

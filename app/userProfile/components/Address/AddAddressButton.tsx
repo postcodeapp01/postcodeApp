@@ -10,7 +10,7 @@ const AddAddressButton: React.FC<Props> = ({onPress}) => (
     style={styles.btn}
     onPress={onPress}
     accessibilityRole="button">
-    <Text style={styles.text}>Add new address</Text>
+    <Text style={styles.text}>Add New Address</Text>
   </TouchableOpacity>
 );
 
@@ -18,12 +18,10 @@ export default AddAddressButton;
 
 const styles = StyleSheet.create({
   btn: {
-    height: 70,
-    marginHorizontal: 20,
+    height: 60,
     width:'100%',
     justifyContent: 'center',
-    paddingHorizontal:22,
-    left:-20,
+    paddingHorizontal:20,
     borderTopColor: '#e3e2ddff',
     borderTopWidth: 2,
   },

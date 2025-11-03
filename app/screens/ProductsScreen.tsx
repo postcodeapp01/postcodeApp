@@ -22,6 +22,7 @@ import ProductFilterBar from '../components/Products/ProductFilterBar';
 import {RootState} from '../../Store';
 import {useSelector} from 'react-redux';
 import LocationSelector from '../home/components/LocationSelector';
+import CategorySiblings from '../components/Products/CategorySiblings';
 
 type ProductsScreenRouteProp = RouteProp<HomeStackParamList, 'ProductsScreen'>;
 type ProductsScreenNavigationProp = NativeStackNavigationProp<
@@ -120,7 +121,6 @@ const ProductsScreen: React.FC = () => {
     if (selectedBrands.length > 0)
       params.append('brands', selectedBrands.join(','));
 
-    // backend doesn’t handle minDiscount or rating yet (unless you add it)
     if (selectedPriceRange) {
       if (selectedPriceRange.includes('-')) {
         params.append('priceRange', selectedPriceRange.replace(/\s+/g, '')); // remove all spaces
@@ -148,7 +148,7 @@ const ProductsScreen: React.FC = () => {
         `/products/level/${selectedCategoryId}?${query}`,
       );
 
-      // console.log('✅ API Response:', response.data);
+      // console.log('✅ API Response:', response.data.products[0])
 
       setProducts(response.data.products || []);
     } catch (error) {
@@ -157,7 +157,19 @@ const ProductsScreen: React.FC = () => {
       setLoading(false);
     }
   };
-
+   const handleCategoryChange = (categoryId: number) => {
+    console.log('Switching to category:', categoryId);
+    setSelectedCategoryId(categoryId);
+    
+    // Reset filters when changing category
+    setSelectedSizes([]);
+    setSelectedColors([]);
+    setSelectedBrands([]);
+    setSelectedPriceRange(null);
+    setRatingFilter('all');
+    setMinDiscount(0);
+    setSortBy('default');
+  };
   const renderProduct = ({item, index}: {item: Product; index: number}) => (
     <ProductCard
       product={item}
@@ -199,9 +211,13 @@ const ProductsScreen: React.FC = () => {
       <ProductsHeader
         title={pageTitle}
         onBack={() => navigation.goBack()}
-        productCount={products?.length}
+        // productCount={products?.length}
       />
-      <LocationSelector/>
+      {/* <LocationSelector/> */}
+      <CategorySiblings
+        selectedCategoryId={selectedCategoryId}
+        onCategoryChange={handleCategoryChange}
+      />
       <FlatList
         data={products}
         renderItem={renderProduct}
@@ -238,12 +254,9 @@ const ProductsScreen: React.FC = () => {
             setSelectedPriceRange(filters['Price'][0]);
           }
           if (filters['Category'] && filters['Category'].length > 0) {
-            const categoryId = filters['Category'][0]; // already the ID
-            // console.log('category id:', categoryId);
+            const categoryId = filters['Category'][0]; 
             setSelectedCategoryId(Number(categoryId));
           }
-
-          // console.log('Applied :', filters);
         }}
       />
     </SafeAreaView>
