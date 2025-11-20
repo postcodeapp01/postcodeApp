@@ -20,8 +20,6 @@ const initialState: CategoryState = {
   loading: false,
   error: null,
 };
-
-// 👇 Async thunk to fetch categories
 export const fetchCategories = createAsyncThunk(
   'categories/fetchCategories',
   async (_, { rejectWithValue }) => {

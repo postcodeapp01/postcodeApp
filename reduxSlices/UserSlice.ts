@@ -15,6 +15,7 @@ interface UserState {
   };
   isFetchingLocation: boolean;
   locationError?: string | null;
+  locationPermission:boolean;
 }
 
 const initialState: UserState = {
@@ -23,6 +24,7 @@ const initialState: UserState = {
   userDetails: {},
   isFetchingLocation: false,
   locationError: null,
+  locationPermission:false,
 };
 
 export const fetchUserLocation = createAsyncThunk<
@@ -68,21 +70,25 @@ const userSlice = createSlice({
       state.userDetails = {};
       state.isFetchingLocation = false;
       state.locationError = null;
+      state.locationPermission=false;
     },
   },
   extraReducers: builder => {
     builder.addCase(fetchUserLocation.pending, (state) => {
       state.isFetchingLocation = true;
+      state.locationPermission=false;
       state.locationError = null;
     });
     builder.addCase(fetchUserLocation.fulfilled, (state, action) => {
       state.isFetchingLocation = false;
+      state.locationPermission=true;
       if (!state.userDetails) state.userDetails = {};
       state.userDetails.location = action.payload;
       state.locationError = null;
     });
     builder.addCase(fetchUserLocation.rejected, (state, action) => {
       state.isFetchingLocation = false;
+      state.locationPermission=false;
       state.locationError = action.payload ?? action.error.message ?? 'Unknown error';
       if (!state.userDetails) state.userDetails = {};
       state.userDetails.location = undefined;

@@ -5,9 +5,7 @@ import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import AboutSection from '../components/About/AboutSection';
 import FeatureItem from '../components/About/FeatureItem';
 import {aboutData} from '../components/About/mockAboutData';
@@ -16,28 +14,19 @@ import HeaderWithNoIcons from '../components/Profile/HeaderWithNoIcons';
 const AboutTrendRushScreen: React.FC<{navigation: any}> = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-     
     <HeaderWithNoIcons title="About" onBack={() => navigation.goBack()} />
-      {/* Content */}
       <ScrollView 
         style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
-        
-        {/* About TrendRush Section */}
         <AboutSection
           title="About TrendRush"
           content={aboutData.aboutTrendRush}
         />
-
-        {/* Who We Are Section */}
         <AboutSection
           title="Our Mission"
           content={aboutData.whoWeAre}
         />
-
-        {/* What Makes Us Different Section */}
         <View style={styles.featureSection}>
           <Text style={styles.featureSectionTitle}>What Makes Us Different</Text>
           {aboutData.features.map((feature, index) => (
@@ -48,14 +37,10 @@ const AboutTrendRushScreen: React.FC<{navigation: any}> = ({navigation}) => {
             />
           ))}
         </View>
-
-        {/* Our Promise Section */}
         <AboutSection
           title="Our Promise"
           content={aboutData.ourPromise}
         />
-
-        {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>© 2025 TrendRush. All Rights reserved.</Text>
           <Text style={styles.versionText}>Version 1.0</Text>

@@ -1,4 +1,4 @@
-// components/notifications/NotificationToggleCard.tsx
+
 import React from 'react';
 import {View, Text, StyleSheet, Switch} from 'react-native';
 

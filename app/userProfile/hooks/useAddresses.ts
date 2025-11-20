@@ -12,7 +12,7 @@ type UseAddressesReturn = {
   fetchAddresses: () => Promise<void>;
   markDefault: (id: string) => Promise<void>;
   deleteAddress: (id: string) => Promise<void>;
-  upsertAddress: (addr: TAddress) => void; // local update after Add/Edit success
+  upsertAddress: (addr: TAddress) => void; 
 };
 
 export default function useAddresses(): UseAddressesReturn {

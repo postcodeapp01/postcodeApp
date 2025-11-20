@@ -8,24 +8,23 @@ import {
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import ImageCarousel from './components/ImageCarousels';
-import NearbyStores from './components/NearbyStores/NearbyStores';
+import NearbyStores from './homePageComponents/NearbyStores/NearbyStores';
 import homeStyles from '../../sources/styles/HomeStyles';
 import {HomeStackParamList} from '../../navigators/stacks/HomeStack';
-import PickByCategory from './components/PickByCategory/PickByCategory';
-import ShopByBrands from './components/ShopByBrands/ShopByBrands';
-import LocationSelector from './components/LocationSelector';
+import PickByCategory from './homePageComponents/PickByCategory';
+import ShopByBrands from './homePageComponents/ShopByBrands/ShopByBrands';
+import LocationSelector from './homePageComponents/LocationSelector';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {KidsSection} from '../screens/KidsSection';
-import {WomenSection} from '../screens/WomenSection';
-import {MenSection} from '../screens/MenSection';
-import DeliveryNearYouComponent from './components/DeliveryNearYou';
 import {useSelector} from 'react-redux';
 import {RootState} from '../../Store';
-import BestSellers from './components/BestSellers/BestSellers';
-import { StoreRecommendation } from './components/Recommendations/StoreRecommendationCard';
-import RecommendedForYou from './components/Recommendations/RecommendedForYou';
+import BestSellers from './homePageComponents/BestSellers/BestSellers';
+import {StoreRecommendation} from './homePageComponents/Recommendations/StoreRecommendationCard';
+import RecommendedForYou from './homePageComponents/Recommendations/RecommendedForYou';
 import CartIcon from '../common/CartIcon';
+import axiosInstance from '../../config/Api';
+import {MenSection} from './screens/MenSection';
+import {WomenSection} from './screens/WomenSection';
+import {KidsSection} from './screens/KidsSection';
 
 type NavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -34,36 +33,40 @@ type NavigationProp = NativeStackNavigationProp<
 
 export default function Home() {
   const navigation = useNavigation<NavigationProp>();
-   const [recommendedStores, setRecommendedStores] = useState<StoreRecommendation[]>([]);
+  const [recommendedStores, setRecommendedStores] = useState<
+    StoreRecommendation[]
+  >([]);
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const user = useSelector((state: RootState) => state.user.userDetails);
   useEffect(() => {
-    const sampleStores: StoreRecommendation[] = [
-      {
-        id: '1',
-        name: 'Max',
-        category: 'Fashion',
-        image: 'https://res.cloudinary.com/dy6bwdhet/image/upload/v1761393207/Frame_1000002839_vesfhj.png',
-        distance: '1 km',
-        deliveryTime: '45-50 Mins',
-        rating: 4.3,
-        reviewCount: '2k+ ratings',
-        discount: 'UPTO 35% OFF',
-      },
-      {
-        id: '2',
-        name: 'Centro',
-        category: 'FootWear',
-        image: 'https://res.cloudinary.com/dy6bwdhet/image/upload/v1761393207/Frame_1000002839_vesfhj.png',
-        distance: '1 km',
-        deliveryTime: '45-50 Mins',
-        rating: 4.3,
-        reviewCount: '3k+ ratings',
-        discount: 'UPTO 18% OFF',
-      },
-      // Add more stores
-    ];  setRecommendedStores(sampleStores);
-  }, []);
+    async function loadRecommended() {
+      try {
+        if (!user?.location?.lat || !user?.location?.lng) return;
+        const lat = Number(user.location.lat);
+        const lng = Number(user.location.lng);
+        const resp = await axiosInstance.get('/stores/recommended', {
+          params: {lat, lng, radius: 50, limit: 20},
+        });
+        const data = resp.data?.data ?? [];
+        const recs = data.map((s: any) => ({
+          id: String(s.id),
+          name: s.name,
+          category: 'Unknown',
+          image: s.logo,
+          distance: `${Number(s.distance_km).toFixed(1)} km`,
+          deliveryTime: s.offer ?? '—',
+          rating: Number(s.rating) || 0,
+          reviewCount: '',
+          discount: s.offer ?? '',
+          raw: s,
+        }));
+        setRecommendedStores(recs);
+      } catch (err) {
+        console.error('Failed to load recommended stores', err);
+      }
+    }
+    loadRecommended();
+  }, [user?.location?.lat, user?.location?.lng]);
   const handleCategoryPress = (categoryId: number) => {
     if (categoryId === 65) {
       navigation.navigate('MoreScreen');
@@ -79,6 +82,7 @@ export default function Home() {
 
   const handleStorePress = (store: any) => {
     console.log('Store pressed:', store.name);
+    navigation.navigate('StoreScreen', {storeId: store.id});
   };
 
   return (
@@ -86,7 +90,7 @@ export default function Home() {
       <ScrollView
         style={homeStyles.homeContainer}
         showsVerticalScrollIndicator={false}>
-        <LocationSelector showBanner={true} />
+        <LocationSelector showBanner={false} />
         <View style={styles.topRow}>
           <TouchableOpacity
             style={styles.searchBar}
@@ -95,10 +99,18 @@ export default function Home() {
               name="search-outline"
               size={17.5}
               color="#AAAAAA"
-              style={{marginRight: 13.5}}
+              style={{marginRight: 8}}
             />
-            <Text style={styles.searchText}>Search by store, product, ca...</Text>
+            <View style={styles.textContainer}>
+              <Text
+                style={styles.searchText}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                Search by store, product, brand or category...
+              </Text>
+            </View>
           </TouchableOpacity>
+
           {/* icons  */}
           <View style={styles.rightIcons}>
             <TouchableOpacity
@@ -119,17 +131,15 @@ export default function Home() {
               </View>
             </TouchableOpacity>
 
-            
             <View style={styles.iconButton}>
-            <CartIcon size={22} color="#222" />
-          </View>
+              <CartIcon size={22} color="#222" />
+            </View>
           </View>
         </View>
         <PickByCategory onCategoryPress={handleCategoryPress} />
 
         {activeCategory === null ? (
           <>
-            {/* <ImageCarousel /> */}
             {user?.location?.lat && user?.location?.lng && (
               <NearbyStores
                 latitude={user.location.lat}
@@ -139,14 +149,11 @@ export default function Home() {
             )}
             <ShopByBrands />
             <BestSellers />
-            {/* <DeliveryNearYouComponent
-              onSeeAll={handleSeeAll}
-              onStorePress={handleStorePress}
-            /> */}
+
             <RecommendedForYou
-          stores={recommendedStores} 
-          onStorePress={handleStorePress} 
-        />
+              stores={recommendedStores}
+              onStorePress={handleStorePress}
+            />
           </>
         ) : (
           <View>
@@ -176,16 +183,20 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#AAAAAA',
-    height: 40,
-    marginRight: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#AAAAAA',
+    borderRadius: 10,
+    height: 40,
+    paddingHorizontal: 10,
+    marginRight: 12,
+    overflow: 'hidden',
+  },
+  textContainer: {
+    flex: 1,
+    overflow: 'hidden',
   },
   searchText: {
     color: '#AAAAAA',
@@ -208,7 +219,7 @@ const styles = StyleSheet.create({
     borderColor: '#E8E8E8',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 6},
-    shadowOpacity: .25,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 8,
   },

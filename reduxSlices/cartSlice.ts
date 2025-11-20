@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '../config/Api';
 
-// ---------- Types ----------
 export type CartItemType = {
   cartId?: string | number;
   productId: string | number;
@@ -45,8 +44,6 @@ export type CartState = {
   loading: boolean;
   error: string | null;
 };
-
-// ---------- Initial ----------
 const initialState: CartState = {
   items: [],
   storeGroups: [],
@@ -58,8 +55,6 @@ const initialState: CartState = {
   loading: false,
   error: null,
 };
-
-// ---------- Helpers ----------
 const buildGroupsFromItems = (items: CartItemType[]): StoreGroup[] => {
   const map = new Map<number, StoreGroup>();
 
@@ -99,7 +94,6 @@ const recalcTotals = (groups: StoreGroup[]) => {
   return { subtotal, deliveryFee, gst, total };
 };
 
-// ---------- Async Helpers ----------
 const buildGroupsFromItemsAsync = async (items: CartItemType[]): Promise<StoreGroup[]> => {
   const groups = buildGroupsFromItems(items);
   const storeIds = groups.map(g => g.store_id).filter(id => id !== -1);
@@ -138,7 +132,6 @@ const buildGroupsFromItemsAsync = async (items: CartItemType[]): Promise<StoreGr
   return groups;
 };
 
-// ---------- Async Thunks ----------
 export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, thunkAPI) => {
   const res = await axiosInstance.get('/cart');
   const items: CartItemType[] = res.data || [];
@@ -182,7 +175,6 @@ export const removeCartItemOnServer = createAsyncThunk(
   },
 );
 
-// ---------- Slice ----------
 const cartSlice = createSlice({
   name: 'cart',
   initialState,

@@ -115,6 +115,7 @@ const OTPScreen: React.FC<IOtpScreenProps> = ({route}) => {
     <>
       {isLoading && <Loader />}
       <View style={LoginStyles.otpContainer}>
+        
         <Text style={LoginStyles.otpTextStyle}>
           We have sent a Verification code to
         </Text>
@@ -163,18 +164,18 @@ const OTPScreen: React.FC<IOtpScreenProps> = ({route}) => {
         )}
 
         <Text
-          style={[LoginStyles.otpTextStyle, {color: '#476BB9', marginTop: 30}]}>
+          style={[LoginStyles.otpTextStyle, {color: '#000', marginTop: 30,marginBottom: 20}]}>
           Check text message for your OTP
         </Text>
 
         <View style={LoginStyles.resendOtpContainer}>
-          <Text>Didn't get the OTP? </Text>
+          <Text style={{color: '#000', fontWeight: '500',fontSize: 16}}>Didn't get the OTP? </Text>
           {showOtpCount ? (
             <Text
               style={{color: 'grey'}}>{`Resend SMS in ${resendOtpCount}`}</Text>
           ) : (
             <Text
-              style={{color: isLoading ? 'grey' : '#476BB9'}}
+              style={{color: isLoading ? 'grey' : '#476BB9',fontSize: 16}}
               onPress={() => !isLoading && resendOtp()}>
               Resend OTP
             </Text>

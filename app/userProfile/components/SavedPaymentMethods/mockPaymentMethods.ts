@@ -1,4 +1,3 @@
-// data/mockPaymentMethods.ts
 
 export interface PaymentMethod {
   id: string;

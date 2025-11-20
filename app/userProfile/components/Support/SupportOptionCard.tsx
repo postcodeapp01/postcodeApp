@@ -1,4 +1,3 @@
-// components/support/SupportOptionCard.tsx
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -16,12 +15,15 @@ export interface SupportOption {
 interface Props {
   option: SupportOption;
   onPress: () => void;
+  isOpen?: boolean; 
 }
 
-const SupportOptionCard: React.FC<Props> = ({option, onPress}) => {
-  const IconComponent = option.iconType === 'material' 
-    ? MaterialCommunityIcons 
+const SupportOptionCard: React.FC<Props> = ({option, onPress, isOpen = false}) => {
+  const IconComponent = option.iconType === 'material'
+    ? MaterialCommunityIcons
     : Ionicons;
+
+  const chevronName = isOpen ? 'chevron-down' : 'chevron-forward';
 
   return (
     <TouchableOpacity
@@ -31,7 +33,7 @@ const SupportOptionCard: React.FC<Props> = ({option, onPress}) => {
       <View style={styles.iconContainer}>
         <IconComponent name={option.icon} size={18} color="#666" />
       </View>
-      
+
       <View style={styles.content}>
         <Text style={styles.title}>{option.title}</Text>
         {option.subtitle && (
@@ -39,7 +41,7 @@ const SupportOptionCard: React.FC<Props> = ({option, onPress}) => {
         )}
       </View>
 
-      <Ionicons name="chevron-forward" size={18} color="#AAAAAA" />
+      <Ionicons name={chevronName} size={18} color="#AAAAAA" />
     </TouchableOpacity>
   );
 };
@@ -48,7 +50,6 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    // backgroundColor: '#75ef6eff',
     paddingVertical: 10,
     paddingHorizontal: 4,
   },
@@ -69,8 +70,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#000',
     marginBottom: 2,
-    lineHeight:20,
-    letterSpacing:0.1,
+    lineHeight: 20,
+    letterSpacing: 0.1,
   },
   subtitle: {
     fontSize: 12,

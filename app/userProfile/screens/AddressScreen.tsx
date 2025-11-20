@@ -7,7 +7,6 @@ type Props = {navigation: any};
 const AddressScreen: React.FC<Props> = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
-      {/* <AddressListHeader title="Addresses" onBack={() => navigation.goBack()} /> */}
       <AddressList navigation={navigation} />
     </SafeAreaView>
   );

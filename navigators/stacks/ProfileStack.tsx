@@ -16,6 +16,7 @@ import ChatSupportScreen from '../../app/userProfile/screens/ChatSupportScreen';
 import NotificationsScreen from '../../app/userProfile/screens/NotificationsScreen';
 import TermsAndPoliciesScreen from '../../app/userProfile/screens/TermsAndPoliciesScreen';
 import AboutTrendRushScreen from '../../app/userProfile/screens/AboutTrendRushScreen';
+import OrderDetailsScreen from '../../app/userProfile/screens/OrderDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +39,8 @@ export default function UserProfileStack() {
       <Stack.Screen name='Notifications' component={NotificationsScreen} />
       <Stack.Screen name='AboutTrendRush' component={AboutTrendRushScreen} />
       <Stack.Screen name='TermsAndPolicies' component={TermsAndPoliciesScreen} />
+      <Stack.Screen name='OrderDetails' component={OrderDetailsScreen} />
+
     </Stack.Navigator>
   );
 }

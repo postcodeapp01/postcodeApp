@@ -1,16 +1,12 @@
-// screens/SavedPaymentMethodsScreen.tsx
 import React, {useEffect, useState} from 'react';
 import {
   View,
-  Text,
   SafeAreaView,
   StyleSheet,
   FlatList,
   ActivityIndicator,
   Alert,
-  TouchableOpacity,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import PaymentMethodCard, {PaymentMethod} from '../components/SavedPaymentMethods/PaymentMethodCard';
 import AddPaymentMethodButton from '../components/SavedPaymentMethods/AddPaymentMethodButton';
 import EmptyPaymentState from '../components/SavedPaymentMethods/EmptyPaymentState';

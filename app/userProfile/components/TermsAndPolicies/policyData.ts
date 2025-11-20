@@ -1,4 +1,4 @@
-// data/mockPolicyData.ts
+
 
 export const termsAndConditionsText = `By using TrendRush, you agree to our terms and conditions. You are responsible for keeping your account secure and maintaining confidentiality of any shared account details. Orders placed on TrendRush are confirmed only after successful payment and are subject to our cancellation, return, and refund policies. Any misuse of offers, fake accounts, or fraudulent activities may lead to account suspension. Reviews and content shared on the platform must remain respectful and authentic, and TrendRush reserves the right to remove inappropriate or misleading content. By continuing to use the app, you automatically agree to the latest version. For complete details, please review our full Terms & Conditions.
 `;

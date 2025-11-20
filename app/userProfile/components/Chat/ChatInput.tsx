@@ -1,4 +1,4 @@
-// components/chat/ChatInput.tsx
+
 import React from 'react';
 import {View, TextInput, TouchableOpacity, StyleSheet} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';

@@ -1,4 +1,3 @@
-// app/screens/AboutScreen.tsx
 import React from 'react';
 import {
   View,
@@ -56,7 +55,6 @@ const AboutScreen: React.FC<Props> = ({ navigation }) => {
     if (item.screen) {
       navigation.navigate(item.screen);
     } else if (item.url) {
-      // Handle external URLs if needed
       console.log('Opening URL:', item.url);
     }
   };

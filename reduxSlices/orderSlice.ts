@@ -1,11 +1,8 @@
-// reduxSlices/orderSlice.ts
+
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import axiosInstance from '../config/Api'; // adjust path if needed
+import axiosInstance from '../config/Api'; 
 import type {RootState} from '../Store';
 
-/**
- * Types (lightweight)
- */
 export type OrderItem = {
   orderItemId: string;
   productId: string;
@@ -64,9 +61,6 @@ const initialState: OrdersState = {
   deletingOrders: {},
 };
 
-/**
- * Helper: recalc order summary totals from storeGroups (server authoritative but used for optimistic)
- */
 function recalcOrderFromStoreGroups(order: Order): Partial<Order> {
   const groups = order.storeGroups ?? [];
   const subtotal = groups.reduce((s, g) => s + Number(g.storeSubtotal ?? 0), 0);
@@ -76,11 +70,6 @@ function recalcOrderFromStoreGroups(order: Order): Partial<Order> {
   return {subtotal, tax, shippingFee, grandTotal};
 }
 
-/**
- * Thunks
- */
-
-// fetch orders (paginated optional)
 export const fetchOrders = createAsyncThunk<
   Order[],
   {page?: number; limit?: number} | void,
@@ -93,7 +82,6 @@ export const fetchOrders = createAsyncThunk<
     if (p.limit) q.push(`limit=${p.limit}`);
     const url = `/orders${q.length ? '?' + q.join('&') : ''}`;
     const res = await axiosInstance.get(url);
-    // expect res.data.data = orders array (as your backend returns)
     return res.data?.data ?? [];
   } catch (err: any) {
     return rejectWithValue(
@@ -101,11 +89,7 @@ export const fetchOrders = createAsyncThunk<
     );
   }
 });
-/**
- * delete store group (optimistic)
- * Expects backend: DELETE /orders/:orderId/store-groups/:storeGroupId
- * returns { success: true, order: updatedOrder, storeGroups: remainingGroups, ... }
- */
+
 export const deleteOrderStoreGroup = createAsyncThunk<
   {
     orderId: string;
@@ -138,6 +122,26 @@ export const deleteOrderStoreGroup = createAsyncThunk<
     }
   },
 );
+export const updateOrderStatus = createAsyncThunk<
+  {orderId: string; order?: Order},
+  {orderId: string; orderStatus: string; updatedAt?: string},
+  {state: RootState}
+>(
+  'orders/updateStatus',
+  async ({orderId, orderStatus, updatedAt}, {rejectWithValue}) => {
+    try {
+      const body: any = {orderStatus};
+      if (updatedAt) body.updatedAt = updatedAt;
+      const res = await axiosInstance.patch(`/orders/${orderId}`, body);
+      const updatedOrder = res.data?.data ?? res.data ?? null;
+      return {orderId: String(orderId), order: updatedOrder ?? undefined};
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data ?? err?.message ?? 'Failed to update order status',
+      );
+    }
+  },
+);
 export const deleteOrder = createAsyncThunk<
   {orderId: string},
   {orderId: string},
@@ -145,7 +149,6 @@ export const deleteOrder = createAsyncThunk<
 >('orders/deleteOrder', async ({orderId}, {rejectWithValue}) => {
   try {
     const res = await axiosInstance.delete(`/orders/${orderId}`);
-    // Expecting res.data.success or at least echoing orderId
     return {orderId: String(orderId)};
   } catch (err: any) {
     return rejectWithValue(
@@ -160,7 +163,6 @@ export const fetchOrderById = createAsyncThunk<
 >('orders/fetchById', async ({orderId}, {rejectWithValue}) => {
   try {
     const res = await axiosInstance.get(`/orders/${orderId}`);
-    // Expect res.data.data = order object
     return res.data?.data ?? res.data ?? {};
   } catch (err: any) {
     return rejectWithValue(
@@ -168,18 +170,13 @@ export const fetchOrderById = createAsyncThunk<
     );
   }
 });
-/**
- * Slice
- */
 const ordersSlice = createSlice({
   name: 'orders',
   initialState,
   reducers: {
-    // Replace whole list
     setOrders(state, action: PayloadAction<Order[]>) {
       state.list = action.payload;
     },
-    // Update/replace single order
     upsertOrder(state, action: PayloadAction<Order>) {
       const idx = state.list.findIndex(
         o => String(o.orderId) === String(action.payload.orderId),
@@ -187,7 +184,6 @@ const ordersSlice = createSlice({
       if (idx === -1) state.list.unshift(action.payload);
       else state.list[idx] = action.payload;
     },
-    // Remove store group locally (used for optimistic)
     removeStoreGroupLocally(
       state,
       action: PayloadAction<{orderId: string; storeGroupId: string}>,
@@ -204,7 +200,6 @@ const ordersSlice = createSlice({
       order.tax = newVals.tax;
       order.grandTotal = newVals.grandTotal;
     },
-    // revert replace order with previous snapshot
     replaceOrder(
       state,
       action: PayloadAction<{orderId: string; orderSnapshot?: Order | null}>,
@@ -276,12 +271,8 @@ const ordersSlice = createSlice({
       const key = `${orderId}:${storeGroupId}`;
       state.deletingStore[key] = true;
       state.error = null;
-      // perform optimistic removal: snapshot order for potential rollback
-      // we'll not store snapshot here in slice (caller can keep one), but we'll do a simple optimistic mutate:
       const order = state.list.find(o => String(o.orderId) === String(orderId));
       if (order) {
-        // keep a shallow snapshot onto meta? Redux Toolkit stores don't allow easily.
-        // We will perform removal (optimistic), backend success will reconcile.
         order.storeGroups = (order.storeGroups ?? []).filter(
           sg => String(sg.storeGroupId) !== String(storeGroupId),
         );
@@ -299,14 +290,12 @@ const ordersSlice = createSlice({
       delete state.deletingStore[key];
 
       if (updatedOrder) {
-        // Replace order with server authoritative data
         const idx = state.list.findIndex(
           o => String(o.orderId) === String(orderId),
         );
         if (idx !== -1) state.list[idx] = updatedOrder;
         else state.list.unshift(updatedOrder);
       } else {
-        // if server didn't return full order, ensure we at least removed the storeGroup (already done) and keep state
       }
     });
 
@@ -315,8 +304,6 @@ const ordersSlice = createSlice({
       const key = `${orderId}:${storeGroupId}`;
       delete state.deletingStore[key];
 
-      // Re-fetch or revert is required. We can't reliably reconstruct previous order without a snapshot.
-      // Conservative approach: mark error and leave UI to re-fetch order from server (recommended).
       state.error =
         (action.payload as any)?.message ??
         action.error.message ??
@@ -326,14 +313,12 @@ const ordersSlice = createSlice({
       const orderId = String(action.meta.arg.orderId);
       state.deletingOrders[orderId] = true;
       state.error = null;
-      // optimistic removal: remove the order from UI immediately
       state.list = state.list.filter(o => String(o.orderId) !== orderId);
     });
 
     builder.addCase(deleteOrder.fulfilled, (state, action) => {
       const {orderId} = action.payload;
       delete state.deletingOrders[String(orderId)];
-      // already removed optimistically; ensure it's not present
       state.list = state.list.filter(
         o => String(o.orderId) !== String(orderId),
       );
@@ -342,12 +327,37 @@ const ordersSlice = createSlice({
     builder.addCase(deleteOrder.rejected, (state, action) => {
       const attemptedId = String(action.meta.arg.orderId);
       delete state.deletingOrders[attemptedId];
-      // conservative approach on failure: set error and you may want to re-fetch server state
       state.error =
         (action.payload as any)?.message ??
         action.error.message ??
         'Failed to delete order';
-      // In case of failure we can't reconstruct the removed order here — recommend re-fetching
+    });
+    builder.addCase(updateOrderStatus.pending, (state, action) => {
+      state.fetchingOrderId = action.meta.arg.orderId;
+    });
+
+    builder.addCase(updateOrderStatus.fulfilled, (state, action) => {
+      state.fetchingOrderId = null;
+      const {orderId, order} = action.payload;
+      if (!order) {
+        return;
+      }
+      const idx = state.list.findIndex(
+        o => String(o.orderId) === String(orderId),
+      );
+      if (idx === -1) {
+        state.list.unshift(order);
+      } else {
+        state.list[idx] = order;
+      }
+    });
+
+    builder.addCase(updateOrderStatus.rejected, (state, action) => {
+      state.fetchingOrderId = null;
+      state.error =
+        (action.payload as any) ??
+        action.error.message ??
+        'Failed to update order status';
     });
   },
 });
@@ -362,9 +372,6 @@ export const {
 
 export default ordersSlice.reducer;
 
-/**
- * Selectors
- */
 export const selectOrders = (state: RootState) => state.orders.list;
 export const selectOrdersLoading = (state: RootState) => state.orders.loading;
 export const selectOrdersError = (state: RootState) => state.orders.error;

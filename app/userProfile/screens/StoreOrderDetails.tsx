@@ -1,4 +1,4 @@
-// StoreOrderDetails.tsx
+
 import React, { useMemo } from 'react';
 import {
   View,
@@ -41,22 +41,19 @@ export default function StoreOrderDetails() {
 
   const items: any[] = storeGroup.items ?? [];
 
-  // compute bill for this store group (defensive)
   const subtotal = Number(storeGroup.storeSubtotal ?? items.reduce((s, it) => s + Number(it.finalPrice ?? it.price ?? 0), 0));
   const shipping = Number(storeGroup.storeShippingFee ?? 0);
   const tax = Number(storeGroup.storeTax ?? 0);
   const discount = Number(storeGroup.storeDiscount ?? 0);
-  const other = 0; // platform fee / misc if any
+  const other = 0;
   const total = Number(((subtotal - discount) + shipping + tax + other).toFixed(2));
 
   const handleNeedHelp = () => {
-    // open support flow: for now show simple alert
     Alert.alert('Need Help?', 'Open support chat or call support number.');
   };
 
   const handleDownloadInvoice = async () => {
-    // Placeholder: ideally call API to generate invoice PDF and download / open it.
-    // For demo, share a small text blob.
+    
     try {
       await Share.share({
         message: `Invoice for ${order.orderNumber} - ${storeGroup.storeName}\nTotal: ${formatCurrency(total)}`,

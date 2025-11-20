@@ -5,7 +5,8 @@ const { width, height } = Dimensions.get('window');
 
 export const ButtonStyles = StyleSheet.create({
     primary: {
-        backgroundColor: appColors.primaryButtonColor,
+        // backgroundColor: appColors.primaryButtonColor,
+        backgroundColor:'#FF5964',
         padding: 15,
         borderRadius: 5,
         marginTop: 25,

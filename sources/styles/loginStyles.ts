@@ -48,13 +48,14 @@ export const LoginStyles = StyleSheet.create({
         display: 'flex',
         flex: 1,
         backgroundColor: appColors.backgroundColor,
-        paddingVertical: width * 0.2,
+        paddingVertical: width * 0.3,
         paddingHorizontal: 20,
     },
     otpTextStyle: {
         textAlign: 'center',
-        fontSize: 14,
-        marginVertical: 10,
+        fontSize: 16,
+        color:'#000',
+        marginVertical: 5,
     },
     resendOtpContainer: {
         display: 'flex',

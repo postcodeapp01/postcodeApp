@@ -1,4 +1,3 @@
-// screens/NotificationsScreen.tsx
 import React, {useState} from 'react';
 import {
   SafeAreaView,

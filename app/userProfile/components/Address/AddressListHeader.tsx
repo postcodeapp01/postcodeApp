@@ -6,7 +6,9 @@ import AddressCard from './AddressCard';
 import {Address} from './address';
 import AddressSearchBar from './AddressSearchBar';
 import LocationPermissionBanner from './LocationPermissionBanner';
-import { requestLocationPermission } from '../../../common/permissions/location';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../../Store';
+import { fetchUserLocation } from '../../../../reduxSlices/UserSlice';
 
 type DisplayAddresses = {
   default: Address | null;
@@ -24,6 +26,8 @@ type Props = {
   onEdit: (a: Address) => void;
   onDelete: (id: string) => void;
   navigation: any;
+  modal?: boolean;
+  onModalClose?: () => void;
 };
 
 const AddressListHeader: React.FC<Props> = ({
@@ -37,7 +41,33 @@ const AddressListHeader: React.FC<Props> = ({
   onEdit,
   onDelete,
   navigation,
+  modal,
+  onModalClose,
 }) => {
+  const dispatch=useDispatch();
+   const locationPermission = useSelector(
+    (state: RootState) => state.user.locationPermission,
+  );
+  const handleEnableLocation = async () => {
+    try {
+      const resultAction = await dispatch(fetchUserLocation());
+      if (fetchUserLocation.fulfilled.match(resultAction)) {
+        Alert.alert('Location enabled', 'Location access granted');
+      } else {
+        const payload = (resultAction as any).payload;
+        const errMsg =
+          payload || (resultAction as any).error?.message || 'Permission denied';
+        Alert.alert('Permission denied', String(errMsg));
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err?.message ?? 'Failed to get location');
+    }
+  };
+  console.log("modal vaule",modal)
+  const handleBack = () => {
+    if (modal && onModalClose) onModalClose();
+    else navigation.goBack();
+  };
   return (
     <View>
       {/* CONTROLLED SEARCH BAR */}
@@ -45,7 +75,7 @@ const AddressListHeader: React.FC<Props> = ({
         searchQuery={searchQuery}
         onSearchChange={onSearchChange}
         placeholder="Search address..."
-        onBack={()=>navigation.goBack()}
+        onBack={handleBack}
       />
 
       {/* Suggestions overlay (appears under the search bar inside the header) */}
@@ -55,15 +85,9 @@ const AddressListHeader: React.FC<Props> = ({
           onSuggestionPress={onSuggestionPress}
         />
       )}
-      <LocationPermissionBanner
-      onEnable={() => {
-        requestLocationPermission().then(granted => {
-          if (!granted) {
-            Alert.alert('Permission denied', 'Please enable location manually in settings');
-          }
-        });
-      }}
-    />
+      {!locationPermission && (
+        <LocationPermissionBanner onEnable={handleEnableLocation} />
+      )}
       {/* NEW: Use My Location Button */}
       <UseMyLocationButton onPress={onUseMyLocationPress} />
 

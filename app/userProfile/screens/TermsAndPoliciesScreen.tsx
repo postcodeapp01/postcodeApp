@@ -1,14 +1,9 @@
-// screens/TermsAndPoliciesScreen.tsx
 import React from 'react';
 import {
-  View,
-  Text,
   SafeAreaView,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import PolicyTextContent from '../components/TermsAndPolicies/PolicyTextContent';
 import {termsAndConditionsText} from '../components/TermsAndPolicies/policyData';
 import HeaderWithNoIcons from '../components/Profile/HeaderWithNoIcons';

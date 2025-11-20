@@ -1,21 +1,22 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import HomeScreen from '../../app/home/Home';
-import SearchScreen from '../../app/screens/SearchScreen';
-import ProductDetails from '../../app/screens/ProductDetails';
-import AddAddress from '../../app/address/AddAddress';
-import StoreScreen from '../../app/screens/StoreScreen';
-import ProductsScreen from '../../app/screens/ProductsScreen';
-import BuyNowScreen from '../../app/screens/BuyNowScreen';
-import CartScreen from '../../app/screens/CartScreen';
-import CategoryScreen from '../../app/screens/CategoryScreen';
-import MoreScreen from '../../app/screens/MoreScreen';
+import SearchScreen from '../../app/home/screens/SearchScreen';
+import ProductDetails from '../../app/home/screens/ProductDetails';
+import StoreScreen from '../../app/home/screens/StoreScreen';
+import ProductsScreen from '../../app/home/screens/ProductsScreen';
+import BuyNowScreen from '../../app/home/screens/BuyNowScreen';
+import CartScreen from '../../app/home/screens/CartScreen';
+import CategoryScreen from '../../app/home/screens/CategoryScreen';
+import MoreScreen from '../../app/home/screens/MoreScreen';
 import WishlistScreen from '../../app/userProfile/screens/WishlistScreen';
 import AddAddressScreen from '../../app/userProfile/screens/AddAddressScreen';
-import NotificationsScreen from '../../app/screens/NotifictionsScreen';
-import PaymentSuccessScreen from '../../app/components/Cart/PaymentSuccessPage';
-import PaymentScreen from '../../app/screens/PaymentScreen';
-import ViewMoreScreen from '../../app/screens/ViewMoreScreen';
+import NotificationsScreen from '../../app/home/screens/NotifictionsScreen';
+import PaymentSuccessScreen from '../../app/home/components/Cart/PaymentSuccessPage';
+import PaymentScreen from '../../app/home/screens/PaymentScreen';
+import ViewMoreScreen from '../../app/home/screens/ViewMoreScreen';
+import OfferListScreen from '../../app/home/screens/OfferListScreen';
+import BrandProductsScreen from '../../app/home/screens/BrandProductsScreen';
 
 export type HomeStackParamList = {
   HomeScreen: undefined;
@@ -24,7 +25,6 @@ export type HomeStackParamList = {
   AddAddressScreen: undefined;
   CartScreen: undefined;
   ProductDetails: {id: string; resetStack?: boolean};
-  AddAddress: undefined;
   ProductsScreen: {
     id: number;
   };
@@ -43,6 +43,11 @@ export type HomeStackParamList = {
   };
   Payment: undefined;
   ViewMoreScreen:any;
+  OfferList:any;
+  BrandProducts:{
+    id?:string;
+    name?:string;
+  }
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -135,9 +140,15 @@ export default function MyStack() {
         name="CartScreen"
         component={CartScreen}
         options={{
-          headerShown: false, // Myntra-like full screen, hide header
+          headerShown: false, 
         }}
       />
+      <Stack.Screen name="OfferList" component={OfferListScreen}  options={{
+          headerShown: false,
+        }}/>
+      <Stack.Screen name="BrandProducts" component={BrandProductsScreen}  options={{
+          headerShown: false,
+        }}/>
       <Stack.Screen
         name="ProductDetails"
         component={ProductDetails}
@@ -154,18 +165,12 @@ export default function MyStack() {
           headerShown: false,
         }}
       />
-      <Stack.Screen
-        name="AddAddress"
-        component={AddAddress}
-        options={{
-          title: 'Select Delivery Location',
-        }}
-      />
+      
       <Stack.Screen
         name="BuyNowScreen"
         component={BuyNowScreen}
         options={{
-          headerShown: false, // Myntra-like full screen, hide header
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

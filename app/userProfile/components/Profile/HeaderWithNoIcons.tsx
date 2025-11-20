@@ -1,7 +1,5 @@
-// components/profile/ProfileHeader.tsx
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CartIcon from '../../../common/CartIcon';
 
@@ -22,7 +20,7 @@ const HeaderWithNoIcons: React.FC<Props> = ({
     <View style={styles.header}>
       <TouchableOpacity onPress={onBack}>
         <View style={styles.circleButton}>
-          <Icon name="arrow-back" size={22} color="#000" />
+          <Ionicons name="chevron-back" size={22} color="#000" />
         </View>
       </TouchableOpacity>
       <Text style={styles.title}>{title}</Text>

@@ -1,4 +1,4 @@
-// screens/ChatSupportScreen.tsx
+
 import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
@@ -6,11 +6,9 @@ import {
   SafeAreaView,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import ChatMessage, {Message} from '../components/Chat/ChatMessage';
 import QuickReplyButton from '../components/Chat/QuickReplyButton';
 import ChatInput from '../components/Chat/ChatInput';
@@ -24,7 +22,6 @@ const ChatSupportScreen: React.FC<{navigation: any}> = ({navigation}) => {
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    // Scroll to bottom when messages change
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({animated: true});
     }, 100);

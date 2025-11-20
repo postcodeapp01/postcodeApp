@@ -1,4 +1,4 @@
-// components/payment/PaymentMethodCard.tsx
+
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';

@@ -13,8 +13,9 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import WishlistProductCard from '../components/Wishlist/WishlistProductCard';
 import axiosInstance from '../../../config/Api';
-import AddToCartModal from '../../components/ProductDetails/AddToCartModal';
+// import AddToCartModal from '../../components/ProductDetails/AddToCartModal';
 import HeaderWithNoIcons from '../components/Profile/HeaderWithNoIcons';
+import AddToCartModal from '../../home/components/ProductDetails/AddToCartModal';
 
 const screenWidth = Dimensions.get('window').width;
 const H_PADDING = 16; // screen horizontal padding

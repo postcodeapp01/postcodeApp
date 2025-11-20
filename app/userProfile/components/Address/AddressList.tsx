@@ -19,10 +19,12 @@ import axiosInstance from '../../../../config/Api';
 
 type Props = {
   navigation: any;
-  onAddressPress?: (addr: Address) => void; // optional parent callback (e.g. to close modal)
+  onAddressPress?: (addr: Address) => void; 
   onStartAdd?: () => void;
   onStartEdit?: () => void;
   hideAddButton?: boolean;
+  onModalClose?: () => void;
+  modal?: boolean;
 };
 
 const AddressList: React.FC<Props> = ({
@@ -31,10 +33,11 @@ const AddressList: React.FC<Props> = ({
   onStartAdd,
   onStartEdit,
   hideAddButton,
+  onModalClose,
+  modal,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
 
-  // slice selectors
   const addresses = useSelector(selectAllAddresses);
   const currentDefaultAddress = useSelector(selectDefaultAddress); // may be null or suggested
   const loading = useSelector((state: RootState) => state.addresses.loading);
@@ -51,9 +54,6 @@ const AddressList: React.FC<Props> = ({
   const acDebounceRef = useRef<number | null>(null);
   const flatListRef = useRef<FlatList<any> | null>(null);
 
-  useEffect(() => {
-    dispatch(fetchAddresses());
-  }, [dispatch]);
 
   const savedAddresses = useMemo(
     () => addresses.filter((a) => !a.isSuggested),
@@ -303,6 +303,8 @@ const AddressList: React.FC<Props> = ({
             onDelete={confirmDelete}
             onAddressSelect={handleAddressSelect}
             navigation={navigation}
+            modal={modal}
+            onModalClose={onModalClose}
           />
         }
         contentContainerStyle={{paddingBottom: 80, flexGrow: 1}}
